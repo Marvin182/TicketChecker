@@ -1,0 +1,22 @@
+lang=en
+
+login.header=Please sign in
+login.name=Name
+login.password=Password
+login.loginFailedMsg=Could not log in, check your name and password.
+login.login=Sign in
+
+title=Ticket Checker
+logout=Logout
+
+tickets.order=Order Number
+tickets.code=Ticket Code
+tickets.forename=Forename
+tickets.surname=Surname
+tickets.table=Table
+tickets.checkedIn=Checked-In
+tickets.checkedInBy=Checked-In By
+tickets.checkInTime=Check-In Time
+tickets.checkIn=Check-In
+tickets.decline=Decline
+tickets.user=User

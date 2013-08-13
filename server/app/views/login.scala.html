@@ -1,0 +1,31 @@
+@()(implicit lang: Lang)
+
+@main{
+
+<div class="block">
+	<div class="centered">
+		<h1>@Messages("login.header")</h1>
+
+		<form id="loginForm" method="GET" action="login">
+			<fieldset>
+				<div class="form-group">
+					<input id="name" class="form-control" name="name" type="text" placeholder="@Messages("login.name")">
+				</div>
+				<div class="form-group">
+					<input id="password" class="form-control" name="password" type="password" placeholder="@Messages("login.password")">
+				</div>
+				<div class="form-group buttons">
+					<button class="btn btn-default" type="button">
+						<span id="signIn">@Messages("login.login")</span>
+						<i id="loading" class="icon-spinner icon-spin icon-large hide"></i>
+					</button>
+					<div id="loginFailed" class="form-group error">
+						<strong class="help-inline">@Messages("login.loginFailedMsg")</strong>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</div>
+
+}("jquery/js/jquery-ui-1.10.3.custom.min.js", "js/login.js")

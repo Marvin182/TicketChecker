@@ -1,0 +1,54 @@
+
+/* Login */
+body, html {
+	height: 100%;
+}
+.block {
+	text-align: center;
+	height: 100%;
+}
+ .block:before {
+	content: '';
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
+	margin-right: -0.25em; /* Adjusts for spacing */
+}
+.centered {
+	display: inline-block;
+	vertical-align: middle;
+	width: 300px;
+	margin-bottom: 10%; /* push it a little bit up */
+}
+
+#loginFailed {
+	text-align: left;
+	opacity: 0;
+}
+#loginForm .buttons {
+	text-align: right!important;
+}
+
+/* Tickets */
+.navbar .progress {
+	width: 50%;
+	max-width: 500px;
+	float: left;
+	margin: 15px 0 0 30px;
+}
+.content {
+	width: 95%;
+	margin: 1em auto;
+}
+#alerts {
+	position: relative;
+	top: -30px;
+	height: 80px;
+	max-height: 80px;
+	max-width: 500px;
+	margin: 0 auto;
+}
+.alert {
+	padding: 5px 35px 5px 15px;
+	margin-bottom: 5px;
+}

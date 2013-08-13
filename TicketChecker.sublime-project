@@ -1,0 +1,20 @@
+{
+	"folders":
+	[
+		{
+			"name": "Server",
+			"path": "server",
+			"folder_exclude_patterns": ["logs", "project/project", "project/target", "target"]
+		},
+		{
+			"name": "App",
+			"path": "clients/android",
+			"folder_exclude_patterns": ["project/project", "project/target", "target"]
+		},
+		{
+			"name": "TestClient",
+			"path": "clients/console",
+			"folder_exclude_patterns": ["project/project", "project/target", "target"]
+		}
+	]
+}
