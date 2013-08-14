@@ -26,7 +26,18 @@ object AndroidBuild extends Build {
 		javacOptions ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6"),
 		scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions", "-language:postfixOps"),
 		
-		proguardOptions += "-keep class net.sourceforge.zbar.** { *; }"
+		proguardOptions += "-keep class net.sourceforge.zbar.** { *; }",
+
+		// keep scala enums and many attributes, both might be needed by jackson, the underlying library of play json
+		proguardOptions += """
+-dontoptimize
+-keepattributes Exceptions,*Annotation*,Signature,InnerClasses,SourceFile,LineNumberTable,Deprecated
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}"""
+
 	)
 
 	lazy val main = AndroidProject("main", file("."), settings = globalSettings)

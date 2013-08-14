@@ -33,15 +33,15 @@ class Main extends SActivity with SContext  {
 	var preview: CameraPreview = null
 	val scanner: ImageScanner = new ImageScanner
 	lazy val cameraPreview = new SFrameLayout
-	lazy val message = new STextView
+	// lazy val message = new STextView
 	lazy val ticketList = new SListView
 	lazy val ticketAdapter = new TicketListAdapter
 
 	onCreate {
 		contentView = new SVerticalLayout {
-			this += message
+			// this += message
 			this += ticketList
-			SButton("clear").onClick(ticketAdapter.clearTickets)
+			SButton("Ticketliste Leeren").onClick(ticketAdapter.clearTickets)
 			this += cameraPreview
 		}
 	
@@ -57,13 +57,11 @@ class Main extends SActivity with SContext  {
 
 		// val bar = getActionBar
 
-		// java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
-		// java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
-
 		try {
 			ticketApi.connect()
 			info("connected")
 		} catch {
+			case e: ExceptionInInitializerError => error("ExceptionInInitializerError1:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
 			case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
 		}
 	}
@@ -83,7 +81,7 @@ class Main extends SActivity with SContext  {
 
 		if (scanner.scanImage(barcode) != 0) {				
 			val results = scanner.getResults.iterator.map(_.getData).toArray
-			message.text = results.mkString(" | ")
+			// message.text = results.mkString(" | ")
 			QrCodes.tickets(results).foreach{ t =>
 				if (ticketAdapter.add(t)) {
 					ticketApi.send(CheckInTicket(t.order, t.code))

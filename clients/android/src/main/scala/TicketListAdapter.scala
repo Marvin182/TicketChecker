@@ -1,6 +1,9 @@
 package de.mritter.ticketchecker.android
 
-import scala.collection.mutable.HashMap
+import java.util.Date
+import java.text.SimpleDateFormat
+
+import scala.collection.mutable.ArrayBuffer
 
 import android.widget.BaseAdapter
 import android.view.{View, ViewGroup}
@@ -9,8 +12,7 @@ import org.scaloid.common._
 
 import de.mritter.ticketchecker.api.{Ticket, QrTicket, TicketDetails}
 
-class BigTicket(val id: Int,
-				val order: Int,
+class BigTicket(val order: Int,
 				val code: String,
 				var status: Int = 0,
 				var details: Option[TicketDetails] = None) extends Ticket
@@ -19,31 +21,29 @@ class TicketListAdapter extends BaseAdapter {
 
 	implicit val tag = LoggerTag("de.mritter")
 
-	private var lastId = -1
-	
-	private val tickets = new HashMap[String, BigTicket]
+	private val tickets = new ArrayBuffer[BigTicket]
 
-	private def bigTicket(t: Ticket): BigTicket = {
-		lastId += 1
-		tickets.getOrElse(t.order.toString + t.code, new BigTicket(lastId, t.order, t.code))
-	}
-	private def bigTicket(id: Int): BigTicket = tickets.find(_._2.id == id).get._2
+	// just random colors to emphasize the ticket status in the list
+	val colorDefault = 0x00
+	val colorSuccess = 0xff00b30f // green
+	val colorWarning = 0xffd65600 // orange
+	val colorDanger  = 0xffb30000 // red
+	val dt = new SimpleDateFormat("hh:mm:ss");
+
+	private def bigTicket(t: Ticket): BigTicket = tickets.find(x => x.order == t.order && x.code == t.code).getOrElse(new BigTicket(t.order, t.code))
 
 	def add(t: Ticket): Boolean = if (contains(t)) false else {
-		info("add" + t.toString)
-		val key = t.order.toString + t.code
-		tickets.+=((key, bigTicket(t)))
+		tickets += bigTicket(t)
 		notifyDataSetChanged
 		true
 	}
 
 	def clearTickets {
-		lastId = -1
-		tickets.empty
+		tickets.clear
 		notifyDataSetChanged
 	}
 
-	def contains(t: Ticket) = tickets.contains(t.order.toString + t.code)
+	def contains(t: Ticket) = tickets.exists(x => x.order == t.order && x.code == t.code)
 
 	def update(t: Ticket, status: Int, details: Option[TicketDetails]) {
 		if (contains(t)) {
@@ -55,36 +55,46 @@ class TicketListAdapter extends BaseAdapter {
 	}
 	
 	// list adapter stuff
-	def getCount = tickets.size
-	def getItem(position: Int): Object = bigTicket(position)
+	def getCount = tickets.length
+	def getItem(position: Int): Object = tickets(position)
 	def getItemId(position: Int): Long = position
 
 	def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-			// convertView might be null or an old view that be can reuse
+			// convertView might be null or an old view that be can reused
 			implicit val ctx = parent.getContext
 			val v = convertView match {
 				case v: View => v
 				case _ => new SLinearLayout {
-					STextView()
+					STextView().textSize(14 sp)
 				}
 			}
 			val textView = v.asInstanceOf[ViewGroup].getChildAt(0).asInstanceOf[STextView]
 			
 			// update ticket view
-			val t = bigTicket(position)
+			val t = tickets(position)
+			val id = t.order + t.code
 
-			t.status match {
-				case 0 => textView.text =  s"$t.id: $t.order $t.code"
-				case 1 => textView.text =  s"$t.id: $t.order $t.code Invalid"
-				case 2 => textView.text =  s"$t.id: $t.order $t.code CheckInSuccess"
-				case 3 => textView.text =  s"$t.id: $t.order $t.code CheckInFailed"
+			try {
+				val (text, backgroundColor) = t.status match {
+					case 0 => (s"$id: Ckecking...", colorDefault)
+					case 3 => (s"$id: Invalid!", colorDanger)
+					case 1 => t.details.map(d => (s"$id: ${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
+						warn("No ticket details found for CheckInSuccess.")
+						(s"$id: Error!", colorDefault)
+					}
+					case 2 => t.details.map { d =>
+							val time = dt.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
+							(s"$id: ${d.forename} ${d.surname} Checked already in at $time", colorWarning)
+						} getOrElse {
+							warn("No ticket details found for CheckInFailed.")
+							(s"$id: Error!", colorDefault)
+						}
+				}
+				textView.text = text
+				textView.backgroundColor = backgroundColor
+			} catch {
+				case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
 			}
-			
-			// val (text, backgroundColor) = ticket match {
-			// 	case t: Ticket => (t.toString, 0xff00ff00)
-			// 	case t: QrTicket => (t.toString, 0xff000000)
-			// }
-			// textView.backgroundColor = backgroundColor
 
 			v
 	}

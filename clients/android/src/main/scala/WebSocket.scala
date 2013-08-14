@@ -13,13 +13,12 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 
 	implicit val tag = LoggerTag("de.mritter")
 
-	connect
-
 	def sendText(msg: String) {
 		debug(s"WebSocket.send($msg)")
 		try {
 			send(msg)
 		} catch {
+			case e: ExceptionInInitializerError => error("ExceptionInInitializerError3:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
 			case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
 		}
 	}
@@ -29,6 +28,7 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 		try {
 			onMsg(message)
 		} catch {
+			case e: ExceptionInInitializerError => error("ExceptionInInitializerError4:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
 			case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
 		}
 	}

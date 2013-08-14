@@ -14,8 +14,14 @@ class TicketApi {
 
 	implicit val tag = LoggerTag("de.mritter")
 
-	def connect(url: String = "ws://192.168.39.1:9000/api") {
-		ws = new WebSocket(url, receive)
+	def connect(url: String = "ws://192.168.137.1:9000/api") {
+		try {
+			ws = new WebSocket(url, receive)
+			info("connecting")
+			ws.connect
+		} catch {
+			case e: ExceptionInInitializerError => error("ExceptionInInitializerError2:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
+		}
 	}
 
 	def send[T](msg: T)(implicit write: Writes[T]) {
