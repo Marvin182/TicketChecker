@@ -18,7 +18,7 @@ object AndroidBuild extends Build {
 			"Mandubian repository snapshots" at "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots/" // Play 2.2-SNAPSHOT
 		),
 		libraryDependencies ++= Seq(
-			"org.scaloid" %% "scaloid" % "2.1-8",
+			"org.scaloid" %% "scaloid" % "2.3-8",
 			"play" %% "play-json" % "2.2-SNAPSHOT",
 			"org.java-websocket" % "Java-WebSocket" % "1.3.0"
 		),
