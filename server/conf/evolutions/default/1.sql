@@ -13,7 +13,6 @@ create table tickets (
 	checkedInById int unsigned,
 	checkInTime int unsigned,
 	primary key (id)
-	-- constraint foreign key (checkedInById) references users (id) on delete set null
 );
 
 # --- !Downs

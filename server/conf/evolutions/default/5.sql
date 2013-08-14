@@ -14,4 +14,4 @@ insert into tickets (orderNumber, code, forename, surname, tableNumber) values
 
 # --- !Downs
  
-truncate table tickets;
+delete from tickets;

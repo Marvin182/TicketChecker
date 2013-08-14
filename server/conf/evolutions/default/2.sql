@@ -10,7 +10,7 @@ create table users (
 	primary key (id)
 );
 
-alter table tickets add constraint fk_checkedInById foreign key (checkedInById) references users(id);
+alter table tickets add constraint fk_checkedInById foreign key (checkedInById) references users(id) on delete set null;
 
 # --- !Downs
 

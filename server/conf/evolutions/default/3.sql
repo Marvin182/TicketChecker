@@ -9,7 +9,7 @@ create table sessions (
 	primary key(id),
 );
 
-alter table sessions add constraint fk_userId foreign key (userId) references users(id);
+alter table sessions add constraint fk_userId foreign key (userId) references users(id) on delete cascade;
 
 # --- !Downs
 
