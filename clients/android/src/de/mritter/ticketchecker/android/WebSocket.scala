@@ -1,11 +1,11 @@
 package de.mritter.ticketchecker.android
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URI
+import java.net.URISyntaxException
 
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.WebSocketImpl
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
 
 import de.mritter.android.common._
 
@@ -16,8 +16,7 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 		try {
 			send(msg)
 		} catch {
-			case e: ExceptionInInitializerError => error("ExceptionInInitializerError3:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
-			case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
+			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 		}
 	}
 
@@ -26,8 +25,7 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 		try {
 			onMsg(message)
 		} catch {
-			case e: ExceptionInInitializerError => error("ExceptionInInitializerError4:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
-			case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
+			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 		}
 	}
 

@@ -11,8 +11,6 @@ import android.content.Context
 import android.hardware.Camera
 import android.hardware.Camera._
 
-import org.scaloid.common._
-
 class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback {
 
 	private var camera: Camera = null
@@ -36,7 +34,7 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 
 			var params = camera.getParameters
 			params.setFlashMode("off")
-			// params.setFlashMode("torch")
+			params.setFlashMode("torch")
 			params.setFocusMode("continuous-picture")
 			camera.setParameters(params)
 

@@ -20,4 +20,6 @@ The ticket server is written in Scala using the play framework. All you should n
 	- [Scala-IDE](http://scala-ide.org/download/current.html)
 	- [Android Proguard Scala](https://github.com/banshee/AndroidProguardScala)
 	- [IvyDE](http://ant.apache.org/ivy/ivyde/download.cgi)
-- import the project from clients/android/, resolve the dependencies (right click on ivy.xml[*] -> Resolve) and you should be good to go
+- open the project the first time
+	- import the project from clients/android/ as normal Eclipse project
+	- right click the ivy.xml and choos Add Ivy Library, uncheck the project specify settings in the second tab and click finish

@@ -10,6 +10,14 @@ import android.hardware._
 import android.hardware.Camera._
 import android.content.pm.ActivityInfo
 
+import java.net.URI
+import java.net.URISyntaxException
+import org.java_websocket.WebSocketImpl
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
+
+
+
 import net.sourceforge.zbar._
 
 // import android.support.v7.app.ActionBar
@@ -25,7 +33,6 @@ object Main {
 class Main extends Activity {
 	Main  
   
-	val TAG = "de.mritter"
 	val ticketApi = new TicketApi
 
 	var cameraPreview: CameraPreview = null
@@ -44,14 +51,14 @@ class Main extends Activity {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.main)
 
-		hostAddress.setText("192.168.137.1")
-		// hostAddress.setText("192.168.178.34")
+		hostAddress.setText("192.168.178.34")
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
 				ticketApi.connect(hostAddress.getText.toString)
 			}
 		})
-		// ticketApi.connect(hostAddress.getText.toString)
+		log.d("hostAddress=" + hostAddress.getText.toString)
+		ticketApi.connect(hostAddress.getText.toString)
 
 		cameraPreview = new CameraPreview(this, onPreviewFrame)
 		previewFrame.addView(cameraPreview)
@@ -63,6 +70,11 @@ class Main extends Activity {
 				tickets.clear
 			}
 		})
+	}
+
+	override def onCreateOptionsMenu(menu: Menu) = {
+		getMenuInflater().inflate(R.menu.main, menu)
+		true
 	}
 
 	override def onResume() {
@@ -83,92 +95,28 @@ class Main extends Activity {
 		if (scanner.scanImage(barcode) != 0) {				
 			val results = scanner.getResults.iterator.map(_.getData).toArray
 			log.v("scanned: " + results.mkString(" | "))
-			QrCodes.tickets(results).foreach{ t =>
-				// if (ticketAdapter.add(t)) {
-				// 	ticketApi.send(CheckInTicket(t.order, t.code))
-				// }
+			try {
+				QrCodes.tickets(results).foreach{ t =>
+					if (tickets.add(t)) {
+						log.i(s"added $t")
+						ticketApi.send(CheckInTicket(t.order, t.code))
+					}
+				}
+			} catch {
+			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 			}
 		}
 	}
 
-	// val scanner: ImageScanner = new ImageScanner
-	// lazy val cameraPreview = new SFrameLayout
-	// lazy val urlEdit = new SEditText
-	// lazy val ticketList = new SListView
-	// lazy val ticketAdapter = new TicketListAdapter
+	ticketApi.onTicketStatusChange = ((ticket: Ticket, status: Int, details: Option[TicketDetails]) =>
+		runOnUiThread(tickets.update(ticket, status, details))
+	)
 
-	// override def onCreateOptionsMenu(menu: Menu) = {
-	// 	// Inflate the menu; this adds items to the action bar if it is present.
-	// 	getMenuInflater().inflate(R.menu.main, menu)
-	// 	true
-	// }
-
+	private def runOnUiThread(f: => Unit) {
+		runOnUiThread {
+			new Runnable() {
+				def run() {	f }
+			}
+		}
+	}
 }
-
-
-
-
-// 	// GUI elements
-// 	var preview: CameraPreview = null
-// 	// val scanner: ImageScanner = new ImageScanner
-// 	lazy val cameraPreview = new SFrameLayout
-// 	lazy val urlEdit = new SEditText
-// 	lazy val ticketList = new SListView
-// 	lazy val ticketAdapter = new TicketListAdapter
-
-// 	info("Main")
-// 	onCreate {
-// 		info("onCreate")
-// 		contentView = new SVerticalLayout {
-// 			this += urlEdit
-// 			SButton("Verbinden").onClick(ticketApi.connect(urlEdit.text.toString))
-// 			this += ticketList
-// 			SButton("Ticketliste Leeren").onClick(ticketAdapter.clearTickets)
-// 			this += cameraPreview
-// 		}
-	
-// 		ticketList.setAdapter(ticketAdapter)
-
-// 		// setting up camera preview
-// 		preview = new CameraPreview(onPreviewFrame)
-// 		cameraPreview.addView(preview)
-
-// 		// set up qr code scanner
-// 		// scanner.setConfig(0, Config.X_DENSITY, 3)
-// 		// scanner.setConfig(0, Config.Y_DENSITY, 3)
-
-// 		try {
-// 			ticketApi.connect()
-// 			info("connected")
-// 		} catch {
-// 			case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
-// 		}
-// 	}
-
-// 	onPause {
-// 		preview.pause
-// 	}
-
-// 	onResume {
-// 		preview.resume
-// 	}
-
-// 	def onPreviewFrame(data: Array[Byte], camera: Camera) {
-// 		val size = camera.getParameters.getPreviewSize
-// 		// val barcode = new Image(size.width, size.height, "Y800")
-// 		// barcode.setData(data)
-
-// 		// if (scanner.scanImage(barcode) != 0) {				
-// 		// 	val results = scanner.getResults.iterator.map(_.getData).toArray
-// 		// 	QrCodes.tickets(results).foreach{ t =>
-// 		// 		if (ticketAdapter.add(t)) {
-// 		// 			ticketApi.send(CheckInTicket(t.order, t.code))
-// 		// 		}
-// 		// 	}
-// 		// }
-// 	}
-
-// 	ticketApi.onTicketStatusChange = ((ticket: Ticket, status: Int, details: Option[TicketDetails]) =>
-// 		runOnUiThread(ticketAdapter.update(ticket, status, details))
-// 	)
-// }

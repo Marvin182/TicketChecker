@@ -18,7 +18,7 @@ class TicketApi {
 			log.i(s"connecting to $url")
 			ws.connect
 		} catch {
-			case e: ExceptionInInitializerError => error("ExceptionInInitializerError2:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
+			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 		}
 	}
 
