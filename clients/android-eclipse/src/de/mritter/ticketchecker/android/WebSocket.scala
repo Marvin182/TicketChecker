@@ -7,14 +7,12 @@ import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import org.scaloid.common._
+import de.mritter.android.common._
 
 class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new URI(url)) {
 
-	implicit val tag = LoggerTag("de.mritter")
-
 	def sendText(msg: String) {
-		debug(s"WebSocket.send($msg)")
+		log.v(s"WebSocket.send($msg)")
 		try {
 			send(msg)
 		} catch {
@@ -24,7 +22,7 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 	}
 
 	override def onMessage(message: String) = {
-		debug(s"WebSocket.onMessage($message)")
+		log.v(s"WebSocket.onMessage($message)")
 		try {
 			onMsg(message)
 		} catch {
@@ -34,14 +32,14 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 	}
 
 	override def onOpen(handshake: ServerHandshake) {
-		debug("WebSocket.open()")
+		log.v("WebSocket.open()")
 	}
 
 	override def onClose(code: Int, reason: String, remote: Boolean) {
-		debug(s"WebSocket.onClose($code, $reason, $remote")
+		log.v(s"WebSocket.onClose($code, $reason, $remote")
 	}
 
 	override def onError(x: Exception) {
-		debug("WebSocket.onError " + x.toString)
+		log.v("WebSocket.onError " + x.toString)
 	}
 }

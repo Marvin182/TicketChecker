@@ -6,6 +6,6 @@
         status="release">
 	</info>
 	
-	<dependency org="org.scaloid" name="scaloid_2.10" rev="2.3-8" />
+	<dependency org="play" name="play-json_2.10" rev="2.2-SNAPSHOT" />
 	<dependency org="org.java-websocket" name="Java-WebSocket" rev="1.3.0" />
 </ivy-module>

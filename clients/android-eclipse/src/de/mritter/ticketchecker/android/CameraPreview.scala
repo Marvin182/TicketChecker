@@ -13,11 +13,13 @@ import android.hardware.Camera._
 
 import org.scaloid.common._
 
-class CameraPreview()//protected val previewFrameCb: (Array[Byte], Camera) => Unit)
-					(implicit context: Context) extends SSurfaceView with SurfaceHolder.Callback {
+class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback {
 
-	protected var camera: Camera = null
+	private var camera: Camera = null
 
+	getHolder.addCallback(this)
+	getHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS) // deprecated setting, but required on Android versions prior to 3.0
+	
 	def pause {
 		if (camera != null) {
 			camera.stopPreview
@@ -32,35 +34,36 @@ class CameraPreview()//protected val previewFrameCb: (Array[Byte], Camera) => Un
 			// ToDo catch exceptions
 			camera = Camera.open
 
-			// set camera surface rotation to 90 degs to match activity view in portrait
+			var params = camera.getParameters
+			params.setFlashMode("off")
+			// params.setFlashMode("torch")
+			params.setFocusMode("continuous-picture")
+			camera.setParameters(params)
+
+			// set camera surface rotation to 90 degrees to match activity view in portrait
 			camera.setDisplayOrientation(90)
 
-			camera.autoFocus(autoFocusCB)
-		camera.setPreviewDisplay(holder)
+			// camera.autoFocus(autoFocusCB)
+			camera.setPreviewDisplay(getHolder)
 
-			//camera.setPreviewCallback(new PreviewCallback {
-			//	def onPreviewFrame(data: Array[Byte], camera: Camera) = previewFrameCb(data, camera)
-			//})
+			camera.setPreviewCallback(new PreviewCallback {
+				def onPreviewFrame(data: Array[Byte], camera: Camera) = previewFrameCb(data, camera)
+			})
 			camera.startPreview
 		}
 	}
 
-	protected val autoFocusHandler = new Handler
-	protected val doAutoFocus = new Runnable {
+	private val autoFocusHandler = new Handler
+	private val doAutoFocus = new Runnable {
 		def run {
 			if (camera != null)	camera.autoFocus(autoFocusCB)
 		}
 	}
-	protected val autoFocusCB: AutoFocusCallback = new AutoFocusCallback {
-			def onAutoFocus(success: Boolean, camera: Camera) {
-				autoFocusHandler.postDelayed(doAutoFocus, 500)
-			}
+	private val autoFocusCB: AutoFocusCallback = new AutoFocusCallback {
+		def onAutoFocus(success: Boolean, camera: Camera) {
+			autoFocusHandler.postDelayed(doAutoFocus, 250)
 		}
-
-	// register a SurfaceHolder.Callback so we get notified when the underlying surface is created and destroyed.
-	getHolder.addCallback(this)
-	// deprecated setting, but required on Android versions prior to 3.0
-	getHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
+	}
 
 	def surfaceCreated(holder: SurfaceHolder) {
 		camera.setPreviewDisplay(holder)
@@ -70,31 +73,28 @@ class CameraPreview()//protected val previewFrameCb: (Array[Byte], Camera) => Un
 	}
 
 	def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int): Unit = {
-		// if (holder.getSurface == null) {
-		// 	// preview surface does not exist
-		// 	return
-		// }
+	// 	if (holder.getSurface == null) {
+	// 		// preview surface does not exist
+	// 		return
+	// 	}
 
-		// // stop preview before making changes
-		// try {
-		// 	camera.stopPreview
-		// } catch {
-		// 	// ignore: tried to stop a non-existent preview
-		// 	case _: Throwable =>
-		// }
+	// 	if (camera == null) { 
+	// 		return
+	// 	}
+	// 	camera.stopPreview
 
-		// try {
-		// 	// Hard code camera surface rotation 90 degs to match Activity view in portrait
-		// 	camera.setDisplayOrientation(90)
+	// 	try {
+	// 		// Hard code camera surface rotation 90 degs to match Activity view in portrait
+	// 		camera.setDisplayOrientation(90)
 
-		// 	camera.setPreviewDisplay(holder)
-		// 	camera.setPreviewCallback(new PreviewCallback {
-		// 		def onPreviewFrame(data: Array[Byte], camera: Camera) = previewFrameCb(data, camera)
-		// 	})
-		// 	camera.startPreview
-		// 	camera.autoFocus(autoFocusCb)
-		// } catch {
-		// 	case e: Exception => Log.d("DBG", s"Error starting camera preview: ${e.getMessage}")
-		// }
+	// 		camera.setPreviewDisplay(holder)
+	// 		camera.setPreviewCallback(new PreviewCallback {
+	// 			def onPreviewFrame(data: Array[Byte], camera: Camera) = previewFrameCb(data, camera)
+	// 		})
+	// 		camera.startPreview
+	// 		camera.autoFocus(autoFocusCb)
+	// 	} catch {
+	// 		case e: Exception => Log.d("DBG", s"Error starting camera preview: ${e.getMessage}")
+	// 	}
 	}
 }
