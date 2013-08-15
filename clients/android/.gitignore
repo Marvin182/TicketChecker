@@ -1,27 +1,31 @@
-###Scala###
- 
-*.class
-*.log
+###Eclipse###
 
-# sbt specific
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
+*.pydevproject
+.project
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
 
-# Scala-IDE specific
-.scala_dependencies
+# External tool builders
+.externalToolBuilders/
 
-###SBT###
- 
-target/
-lib_managed/
-src_managed/
-project/boot/
+# Locally stored "Eclipse launch configurations"
+*.launch
 
-###SublimeText###
- 
-*.sublime-project
-*.sublime-workspace
+# CDT-specific
+.cproject
+
+# PDT-specific
+.buildpath
+
+.cache
+proguard_cache
