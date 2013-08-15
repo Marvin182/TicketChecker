@@ -14,7 +14,7 @@ class TicketApi {
 
 	implicit val tag = LoggerTag("de.mritter")
 
-	def connect(url: String = "ws://192.168.137.1:9000/api") {
+	def connect(url: String = "ws://192.168.178.34:9000/api") {
 		try {
 			ws = new WebSocket(url, receive)
 			info("connecting")

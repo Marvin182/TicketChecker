@@ -65,14 +65,14 @@ class TicketListAdapter extends BaseAdapter {
 			val v = convertView match {
 				case v: View => v
 				case _ => new SLinearLayout {
-					STextView().textSize(14 sp)
+					STextView().textSize(11 sp)
 				}
 			}
 			val textView = v.asInstanceOf[ViewGroup].getChildAt(0).asInstanceOf[STextView]
 			
 			// update ticket view
 			val t = tickets(position)
-			val id = t.order + t.code
+			val id = "%04d".format(t.order) + t.code
 
 			try {
 				val (text, backgroundColor) = t.status match {

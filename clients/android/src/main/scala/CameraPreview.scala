@@ -18,6 +18,8 @@ class CameraPreview(protected val previewFrameCb: (Array[Byte], Camera) => Unit)
 
 	protected var camera: Camera = null
 
+	override implicit val tag = LoggerTag("de.mritter")
+
 	def pause {
 		if (camera != null) {
 			camera.stopPreview
@@ -32,11 +34,17 @@ class CameraPreview(protected val previewFrameCb: (Array[Byte], Camera) => Unit)
 			// ToDo catch exceptions
 			camera = Camera.open
 
+			var params = camera.getParameters
+			params.setFlashMode("off")
+			params.setFlashMode("torch")
+			params.setFocusMode("continuous-picture")
+			camera.setParameters(params)
+
 			// set camera surface rotation to 90 degs to match activity view in portrait
 			camera.setDisplayOrientation(90)
 
-			camera.autoFocus(autoFocusCB)
-		camera.setPreviewDisplay(holder)
+			// camera.autoFocus(autoFocusCB)
+			camera.setPreviewDisplay(holder)
 
 			camera.setPreviewCallback(new PreviewCallback {
 				def onPreviewFrame(data: Array[Byte], camera: Camera) = previewFrameCb(data, camera)
@@ -53,7 +61,7 @@ class CameraPreview(protected val previewFrameCb: (Array[Byte], Camera) => Unit)
 	}
 	protected val autoFocusCB: AutoFocusCallback = new AutoFocusCallback {
 			def onAutoFocus(success: Boolean, camera: Camera) {
-				autoFocusHandler.postDelayed(doAutoFocus, 500)
+				autoFocusHandler.postDelayed(doAutoFocus, 250)
 			}
 		}
 
