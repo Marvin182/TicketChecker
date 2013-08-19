@@ -1,0 +1,123 @@
+[0m[[0mdebug[0m] [0m# for debugging, don't inline methods[0m
+[0m[[0mdebug[0m] [0m#-dontoptimize[0m
+[0m[[0mdebug[0m] [0m#-optimizationpasses 5[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-dontobfuscate[0m
+[0m[[0mdebug[0m] [0m-dontoptimize[0m
+[0m[[0mdebug[0m] [0m-renamesourcefileattribute SourceFile[0m
+[0m[[0mdebug[0m] [0m-keepattributes SourceFile,LineNumberTable[0m
+[0m[[0mdebug[0m] [0m-verbose[0m
+[0m[[0mdebug[0m] [0m-flattenpackagehierarchy[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m###[0m
+[0m[[0mdebug[0m] [0m# Android config[0m
+[0m[[0mdebug[0m] [0m###[0m
+[0m[[0mdebug[0m] [0m-dontusemixedcaseclassnames[0m
+[0m[[0mdebug[0m] [0m-dontskipnonpubliclibraryclasses[0m
+[0m[[0mdebug[0m] [0m-dontpreverify[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m# optimizations don't really work with dex, don't bother[0m
+[0m[[0mdebug[0m] [0m#-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*[0m
+[0m[[0mdebug[0m] [0m#-optimizationpasses 5[0m
+[0m[[0mdebug[0m] [0m#-allowaccessmodification[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepattributes *Annotation*[0m
+[0m[[0mdebug[0m] [0m-keep public class com.google.vending.licensing.ILicensingService[0m
+[0m[[0mdebug[0m] [0m-keep public class com.android.vending.licensing.ILicensingService[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepclasseswithmembernames class * {[0m
+[0m[[0mdebug[0m] [0m    native <methods>;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m# We want to keep methods in Activity that could be used in the XML attribute onClick[0m
+[0m[[0mdebug[0m] [0m-keepclassmembers class * extends android.app.Activity {[0m
+[0m[[0mdebug[0m] [0m   public void *(android.view.View);[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m# For enumeration classes, see http://proguard.sourceforge.net/manual/examples.html#enumerations[0m
+[0m[[0mdebug[0m] [0m-keepclassmembers enum * {[0m
+[0m[[0mdebug[0m] [0m    public static **[] values();[0m
+[0m[[0mdebug[0m] [0m    public static ** valueOf(java.lang.String);[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keep class * implements android.os.Parcelable {[0m
+[0m[[0mdebug[0m] [0m  public static final android.os.Parcelable$Creator *;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-dontnote android.annotation.**[0m
+[0m[[0mdebug[0m] [0m-dontnote com.android.vending.licensing.**[0m
+[0m[[0mdebug[0m] [0m-dontnote com.google.vending.licensing.**[0m
+[0m[[0mdebug[0m] [0m-dontwarn android.support.**[0m
+[0m[[0mdebug[0m] [0m-dontnote android.support.**[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m# keep setters in Views so that animations can still work.[0m
+[0m[[0mdebug[0m] [0m# see http://proguard.sourceforge.net/manual/examples.html#beans[0m
+[0m[[0mdebug[0m] [0m-keepclassmembers public class * extends android.view.View {[0m
+[0m[[0mdebug[0m] [0m   void set*(***);[0m
+[0m[[0mdebug[0m] [0m   *** get*();[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepclassmembers class **.R$* {[0m
+[0m[[0mdebug[0m] [0m    public static <fields>;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m###[0m
+[0m[[0mdebug[0m] [0m# Scala proguard config[0m
+[0m[[0mdebug[0m] [0m###[0m
+[0m[[0mdebug[0m] [0m-dontnote scala.concurrent.forkjoin.**[0m
+[0m[[0mdebug[0m] [0m-dontwarn scala.beans.ScalaBeanInfo[0m
+[0m[[0mdebug[0m] [0m-dontwarn scala.concurrent.**[0m
+[0m[[0mdebug[0m] [0m-dontwarn scala.reflect.**[0m
+[0m[[0mdebug[0m] [0m-dontwarn scala.sys.process.package$[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-dontwarn **$$anonfun$*[0m
+[0m[[0mdebug[0m] [0m-dontwarn scala.collection.immutable.RedBlack$Empty[0m
+[0m[[0mdebug[0m] [0m-dontwarn scala.tools.**,plugintemplate.**[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keep class * implements org.xml.sax.EntityResolver[0m
+[0m[[0mdebug[0m] [0m-keep public class scala.reflect.ScalaSignature[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepclassmembers class * {[0m
+[0m[[0mdebug[0m] [0m    ** MODULE$;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keep class scala.collection.SeqLike {[0m
+[0m[[0mdebug[0m] [0m    public java.lang.String toString();[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m-keepclassmembernames class scala.concurrent.forkjoin.ForkJoinPool {[0m
+[0m[[0mdebug[0m] [0m    long eventCount;[0m
+[0m[[0mdebug[0m] [0m    int  workerCounts;[0m
+[0m[[0mdebug[0m] [0m    int  runControl;[0m
+[0m[[0mdebug[0m] [0m    scala.concurrent.forkjoin.ForkJoinPool$WaitQueueNode syncStack;[0m
+[0m[[0mdebug[0m] [0m    scala.concurrent.forkjoin.ForkJoinPool$WaitQueueNode spareStack;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepclassmembernames class scala.concurrent.forkjoin.ForkJoinWorkerThread {[0m
+[0m[[0mdebug[0m] [0m    int base;[0m
+[0m[[0mdebug[0m] [0m    int sp;[0m
+[0m[[0mdebug[0m] [0m    int runState;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepclassmembernames class scala.concurrent.forkjoin.ForkJoinTask {[0m
+[0m[[0mdebug[0m] [0m    int status;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-keepclassmembernames class scala.concurrent.forkjoin.LinkedTransferQueue {[0m
+[0m[[0mdebug[0m] [0m    scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference head;[0m
+[0m[[0mdebug[0m] [0m    scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference tail;[0m
+[0m[[0mdebug[0m] [0m    scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference cleanMe;[0m
+[0m[[0mdebug[0m] [0m}[0m
+[0m[[0mdebug[0m] [0m# view AndroidManifest.xml #generated:11[0m
+[0m[[0mdebug[0m] [0m-keep class de.mritter.ticketchecker.android.Main { <init>(...); }[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0m-dontobfuscate[0m
+[0m[[0mdebug[0m] [0m -dontoptimize[0m
+[0m[[0mdebug[0m] [0m-keep public class play.api.libs.json.** {*;}[0m
+[0m[[0mdebug[0m] [0m-keep public class net.sourceforge.zbar.** {*;}[0m
+[0m[[0mdebug[0m] [0m-dontwarn **[0m
+[0m[[0mdebug[0m] [0m-libraryjars[0m
+[0m[[0mdebug[0m] [0mC:\Portables\android-sdk\sdk\platforms\android-16\android.jar[0m
+[0m[[0mdebug[0m] [0m-printmapping[0m
+[0m[[0mdebug[0m] [0mC:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\bin\mappings.txt[0m
+[0m[[0mdebug[0m] [0m-injars C:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\libs\zbar.jar(!META-INF/**);C:\Users\Marvin\.sbt\boot\scala-2.10.2\lib\scala-library.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\play\play-json_2.10\jars\play-json_2.10-2.2-SNAPSHOT.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\play\play-iteratees_2.10\jars\play-iteratees_2.10-2.2-SNAPSHOT.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\org.scala-stm\scala-stm_2.10.0\jars\scala-stm_2.10.0-0.6.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\com.typesafe\config\bundles\config-1.0.0.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\play\play-functional_2.10\jars\play-functional_2.10-2.2-SNAPSHOT.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\org.scala-lang\scala-reflect\jars\scala-reflect-2.10.0.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\play\play-datacommons_2.10\jars\play-datacommons_2.10-2.2-SNAPSHOT.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\joda-time\joda-time\jars\joda-time-2.1.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\org.joda\joda-convert\jars\joda-convert-1.2.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\org.codehaus.jackson\jackson-core-asl\jars\jackson-core-asl-1.9.10.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\org.codehaus.jackson\jackson-mapper-asl\jars\jackson-mapper-asl-1.9.10.jar(!META-INF/**);C:\Users\Marvin\.ivy2\cache\org.java-websocket\Java-WebSocket\jars\Java-WebSocket-1.3.0.jar(!META-INF/**);C:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\bin\classes.jar(!META-INF/**)[0m
+[0m[[0mdebug[0m] [0m-outjars C:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\bin\classes.proguard.jar[0m
