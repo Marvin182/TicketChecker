@@ -5,10 +5,13 @@ import java.text.SimpleDateFormat
 
 import scala.collection.mutable.ArrayBuffer
 
-import android.widget.BaseAdapter
+import android.widget.{BaseAdapter, TextView}
 import android.view.{View, ViewGroup}
+import android.util.Log
+import android.view.LayoutInflater
+import android.content.Context
 
-import org.scaloid.common._
+// import org.scaloid.common._
 
 import de.mritter.ticketchecker.api.{Ticket, QrTicket, TicketDetails}
 
@@ -17,9 +20,13 @@ class BigTicket(val order: Int,
 				var status: Int = 0,
 				var details: Option[TicketDetails] = None) extends Ticket
 
-class TicketListAdapter extends BaseAdapter {
+class TicketListAdapter(val context: Context) extends BaseAdapter {
 
-	implicit val tag = LoggerTag("de.mritter")
+	// implicit val tag = LoggerTag("de.mritter")
+
+	val TAG = "de.mritter"
+	def info(msg: String) = android.util.Log.e("de.mritter", msg)
+	def error(msg: String) = android.util.Log.e("de.mritter", msg)
 
 	private val tickets = new ArrayBuffer[BigTicket]
 
@@ -38,7 +45,7 @@ class TicketListAdapter extends BaseAdapter {
 		true
 	}
 
-	def clearTickets {
+	def clear {
 		tickets.clear
 		notifyDataSetChanged
 	}
@@ -59,44 +66,39 @@ class TicketListAdapter extends BaseAdapter {
 	def getItem(position: Int): Object = tickets(position)
 	def getItemId(position: Int): Long = position
 
+	val mInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE).asInstanceOf[LayoutInflater]
 	def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-			// convertView might be null or an old view that be can reused
-			implicit val ctx = parent.getContext
-			val v = convertView match {
-				case v: View => v
-				case _ => new SLinearLayout {
-					STextView().textSize(11 sp)
-				}
-			}
-			val textView = v.asInstanceOf[ViewGroup].getChildAt(0).asInstanceOf[STextView]
-			
-			// update ticket view
-			val t = tickets(position)
-			val id = "%04d".format(t.order) + t.code
+		var v: View = convertView
+		if (v == null) { 
+			// v = mInflater.inflate(R.layout.ticket_list_item, parent, false)
+			v = new TextView(this)
+		} 
 
-			try {
-				val (text, backgroundColor) = t.status match {
-					case 0 => (s"$id: Ckecking...", colorDefault)
-					case 3 => (s"$id: Invalid!", colorDanger)
-					case 1 => t.details.map(d => (s"$id: ${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
-						warn("No ticket details found for CheckInSuccess.")
-						(s"$id: Error!", colorDefault)
-					}
-					case 2 => t.details.map { d =>
-							val time = dt.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
-							(s"$id: ${d.forename} ${d.surname} Checked already in at $time", colorWarning)
-						} getOrElse {
-							warn("No ticket details found for CheckInFailed.")
-							(s"$id: Error!", colorDefault)
-						}
-				}
-				textView.text = text
-				textView.backgroundColor = backgroundColor
-			} catch {
-				case e: Throwable => error(e.toString + "\n" + e.getStackTrace)
-			}
+		// val textView = v.findViewById(R.id.text).asInstanceOf[TextView]
+		val textView = v.asInstanceOf[TextView]
 
-			v
+		val t = tickets(position)
+		val id = "%04d".format(t.order) + t.code
+
+		val (text, backgroundColor) = t.status match {
+			case 0 => (s"$id: Ckecking...", colorDefault)
+			case 3 => (s"$id: Invalid!", colorDanger)
+			case 1 => t.details.map(d => (s"$id: ${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
+				Log.w(TAG, "No ticket details found for CheckInSuccess.")
+				(s"$id: Error!", colorDefault)
+			}
+			case 2 => t.details.map { d =>
+					val time = dt.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
+					(s"$id: ${d.forename} ${d.surname} Checked already in at $time", colorWarning)
+				} getOrElse {
+					Log.w(TAG, "No ticket details found for CheckInFailed.")
+					(s"$id: Error!", colorDefault)
+				}
+		}
+		textView.setText(text)
+		textView.setBackgroundColor(backgroundColor)
+
+		v
 	}
 
 	override def hasStableIds = true

@@ -11,8 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.content.Context
 
-// import org.scaloid.common._
-
+import de.mritter.android.common._
 import de.mritter.ticketchecker.api.{Ticket, QrTicket, TicketDetails}
 
 class BigTicket(val order: Int,
@@ -40,6 +39,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 	private def bigTicket(t: Ticket): BigTicket = tickets.find(x => x.order == t.order && x.code == t.code).getOrElse(new BigTicket(t.order, t.code))
 
 	def add(t: Ticket): Boolean = if (contains(t)) false else {
+		log.v("TicketListAdapter.add() " + t)
 		tickets += bigTicket(t)
 		notifyDataSetChanged
 		true
@@ -54,6 +54,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 
 	def update(t: Ticket, status: Int, details: Option[TicketDetails]) {
 		if (contains(t)) {
+			log.v("TicketListAdapter.update() " + t)
 			val ticket = bigTicket(t)
 			ticket.status = status
 			ticket.details = details

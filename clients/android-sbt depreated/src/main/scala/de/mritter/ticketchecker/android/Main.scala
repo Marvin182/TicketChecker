@@ -30,7 +30,7 @@ object Main {
 
 class Main extends Activity {
 	Main  
-  
+
 	val ticketApi = new TicketApi
 
 	var cameraPreview: CameraPreview = null
@@ -49,8 +49,8 @@ class Main extends Activity {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.main)
 
-		// hostAddress.setText("192.168.173.1")
-		hostAddress.setText("192.168.178.34")
+		hostAddress.setText("192.168.173.1")
+		// hostAddress.setText("192.168.178.34")
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
 				ticketApi.connect(hostAddress.getText.toString)
@@ -74,7 +74,7 @@ class Main extends Activity {
 	}
 
 	override def onCreateOptionsMenu(menu: Menu) = {
-		//getMenuInflater().inflate(R.menu.main, menu)
+		getMenuInflater().inflate(R.menu.main, menu)
 		true
 	}
 

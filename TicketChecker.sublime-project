@@ -9,6 +9,7 @@
 		{
 			"name": "App",
 			"path": "clients/android",
+			// "path": "clients/android",
 			"folder_exclude_patterns": ["project/project", "project/target", "target"]
 		},
 		{

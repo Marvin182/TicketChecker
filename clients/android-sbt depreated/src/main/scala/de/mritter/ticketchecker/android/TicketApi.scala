@@ -4,37 +4,35 @@ import scala.reflect._
 
 import play.api.libs.json._
 
-import org.scaloid.common._
-
+import de.mritter.android.common._
 import de.mritter.ticketchecker.api._
 
 class TicketApi {
 	
 	private var ws: WebSocket = null
 
-	implicit val tag = LoggerTag("de.mritter")
-
-	def connect(url: String = "ws://192.168.178.34:9000/api") {
+	def connect(host: String) {
+		val url = s"ws://$host:9000/api"
 		try {
 			ws = new WebSocket(url, receive)
-			info("connecting")
+			log.i(s"connecting to $url")
 			ws.connect
 		} catch {
-			case e: ExceptionInInitializerError => error("ExceptionInInitializerError2:" + e.getCause.toString + "\n" + e.getCause.getStackTrace.mkString("\n"))
+			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 		}
 	}
 
 	def send[T](msg: T)(implicit write: Writes[T]) {
 		val msgJson = Json.toJson(msg).asInstanceOf[JsObject]
 		val text = (msgJson + typ(msg)).toString
-		info("api send " + text)
+		log.i("api send " + text)
 		ws sendText text
 	}
 
 	private	def typ[T](msg: T) = ("typ", Json.toJson(msg.getClass.getSimpleName))
 
 	private def receive(msg: String) {
-		info(s"api receive $msg")
+		log.i(s"api receive $msg")
 		val json = Json.parse(msg)
 		(json \ "typ").asOpt[String].map{ typ => 
 			def isAnsweredBy[T : ClassTag](callback: T => Unit)(implicit readT: Reads[T]): Boolean = {

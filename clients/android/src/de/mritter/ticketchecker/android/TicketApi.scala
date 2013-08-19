@@ -34,6 +34,7 @@ class TicketApi {
 	private def receive(msg: String) {
 		log.i(s"api receive $msg")
 		val json = Json.parse(msg)
+		log.i(s"json=$json")
 		(json \ "typ").asOpt[String].map{ typ => 
 			def isAnsweredBy[T : ClassTag](callback: T => Unit)(implicit readT: Reads[T]): Boolean = {
 				val requiredTyp = classTag[T].runtimeClass.getSimpleName
