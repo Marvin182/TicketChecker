@@ -44,13 +44,14 @@ class Main extends Activity {
 	lazy val previewFrame = find[FrameLayout](R.id.preview)
 	lazy val ticketList = find[ListView](R.id.ticket_list)
 	lazy val clearButton = find[Button](R.id.clear)
+	lazy val checkinProgressBar = find[ProgressBar](R.id.checkin_progress)
 
 	override def onCreate(savedInstanceState: Bundle) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.main)
 
-		// hostAddress.setText("192.168.173.1")
-		hostAddress.setText("192.168.178.34")
+		// hostAddress.setText("192.168.178.34")
+		hostAddress.setText("shubit.no-ip.biz")
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
 				ticketApi.connect(hostAddress.getText.toString)
@@ -68,13 +69,10 @@ class Main extends Activity {
 				tickets.clear
 			}
 		})
-
-		tickets.add(QrTicket(20, "xvlc"))
-		tickets.add(QrTicket(21, "uiae"))
 	}
 
 	override def onCreateOptionsMenu(menu: Menu) = {
-		//getMenuInflater().inflate(R.menu.main, menu)
+		getMenuInflater().inflate(R.menu.main, menu)
 		true
 	}
 
@@ -104,7 +102,7 @@ class Main extends Activity {
 					}
 				}
 			} catch {
-			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
+				case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 			}
 		}
 	}
@@ -112,6 +110,11 @@ class Main extends Activity {
 	ticketApi.onTicketStatusChange = ((ticket: Ticket, status: Int, details: Option[TicketDetails]) =>
 		runOnUiThread(tickets.update(ticket, status, details))
 	)
+
+	ticketApi.onEventStatsUpdate = (stats: EventStats) => runOnUiThread {
+		checkinProgressBar.setMax(stats.ticketsTotal)
+		checkinProgressBar.setProgress(stats.ticketsCheckedIn)
+	}
 
 	private def runOnUiThread(f: => Unit) {
 		runOnUiThread {

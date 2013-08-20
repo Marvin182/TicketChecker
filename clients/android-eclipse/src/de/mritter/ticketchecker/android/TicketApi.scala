@@ -44,10 +44,12 @@ class TicketApi {
 			}
 			isAnsweredBy[CheckInTicketSuccess](t => onTicketStatusChange(t.details, 1, Some(t.details))) ||
 			isAnsweredBy[CheckInTicketFailed](t => onTicketStatusChange(t.details, 2, Some(t.details))) ||
-			isAnsweredBy[CheckInTicketInvalid](t => onTicketStatusChange(QrTicket(t.order, t.code), 3, None))
+			isAnsweredBy[CheckInTicketInvalid](t => onTicketStatusChange(QrTicket(t.order, t.code), 3, None)) ||
+			isAnsweredBy[EventStats](t => onEventStatsUpdate(t))
 		}
 	}
 
 	var onTicketStatusChange: (Ticket, Int, Option[TicketDetails]) => Unit = (ticket, status, details) => Unit
+	var onEventStatsUpdate: (EventStats) => Unit = (stats) => Unit
 }
 

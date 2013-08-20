@@ -5,7 +5,7 @@ import android.util.Log
 package object common {
 	private val TAG = "de.mritter"
 
-	// adb logcat -c && adb logcat de.mritter:D *:S
+	// adb logcat -c && adb logcat de.mritter:V *:S
 	object log {
 		def v(msg: String) { Log.v(TAG, msg) }
 		def d(msg: String) { Log.d(TAG, msg) }

@@ -82,13 +82,13 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		val (text, backgroundColor) = t.status match {
 			case 0 => (s"$id: Ckecking...", colorDefault)
 			case 3 => (s"$id: Invalid!", colorDanger)
-			case 1 => t.details.map(d => (s"$id: ${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
+			case 1 => t.details.map(d => (s"${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
 				Log.w(TAG, "No ticket details found for CheckInSuccess.")
 				(s"$id: Error!", colorDefault)
 			}
 			case 2 => t.details.map { d =>
 					val time = dt.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
-					(s"$id: ${d.forename} ${d.surname} Checked already in at $time", colorWarning)
+					(s"${d.forename} ${d.surname} Checked already in at $time", colorWarning)
 				} getOrElse {
 					Log.w(TAG, "No ticket details found for CheckInFailed.")
 					(s"$id: Error!", colorDefault)

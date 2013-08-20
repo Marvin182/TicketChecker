@@ -80,7 +80,7 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 
 	var torchOn = false
 	override def onSensorChanged(event: SensorEvent) {
-		val isDark = event.values(0) < 100
+		val isDark = event.values(0) < 30
 		if (torchOn != isDark) {
 			torchOn = !torchOn
 			setTorch(torchOn)

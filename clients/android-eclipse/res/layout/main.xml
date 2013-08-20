@@ -30,6 +30,14 @@
             android:text="@string/connect" />
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/checkin_progress"
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="5dp" />
+
     <ListView
         android:id="@+id/ticket_list"
         android:layout_width="match_parent"

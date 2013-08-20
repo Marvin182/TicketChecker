@@ -8,22 +8,29 @@ import android.os.Handler
 import android.view._
 import android.content.Context
 
-import android.hardware.Camera
 import android.hardware.Camera._
+import android.hardware.{Camera, Sensor, SensorEventListener, SensorEvent, SensorManager}
 
-class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback {
+import de.mritter.android.common._
+
+class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback  with SensorEventListener {
 
 	private var camera: Camera = null
 
 	getHolder.addCallback(this)
 	getHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS) // deprecated setting, but required on Android versions prior to 3.0
 	
+
 	def pause {
 		if (camera != null) {
 			camera.stopPreview
 			camera.setPreviewCallback(null)
 			camera.release
 			camera = null
+		}
+
+		if (lightSensor != null) {
+			sensorManager.unregisterListener(this)
 		}
 	}
 
@@ -33,8 +40,6 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 			camera = Camera.open
 
 			var params = camera.getParameters
-			params.setFlashMode("off")
-			// params.setFlashMode("torch")
 			params.setFocusMode("continuous-picture")
 			camera.setParameters(params)
 
@@ -49,8 +54,41 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 			})
 			camera.startPreview
 		}
+
+		if (lightSensor != null) {
+			sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+		}
 	}
 
+	def setTorch(on: Boolean) {
+		var params = camera.getParameters
+		if (on)
+			params.setFlashMode("torch")
+		else
+			params.setFlashMode("off")
+		camera.setParameters(params)
+	}
+
+	val sensorManager = context.getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
+	val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+	if (lightSensor == null) {
+		log.w("Sensor.TYPE_LIGHT not available!")
+	}
+
+	// SensorEventListener
+	override def onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+
+	var torchOn = false
+	override def onSensorChanged(event: SensorEvent) {
+		val isDark = event.values(0) < 30
+		if (torchOn != isDark) {
+			torchOn = !torchOn
+			setTorch(torchOn)
+		}
+		// log.v("sensorManager.onSensorChanged() " + event.values(0))
+	}
+	
+	// regularly trigger autofocus
 	private val autoFocusHandler = new Handler
 	private val doAutoFocus = new Runnable {
 		def run {
@@ -63,6 +101,7 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 		}
 	}
 
+	// SurfaceHolder.Callback
 	def surfaceCreated(holder: SurfaceHolder) {
 		camera.setPreviewDisplay(holder)
 	}
@@ -71,6 +110,7 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 	}
 
 	def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int): Unit = {
+		log.d(s"CameraPreview.surfaceChanged($format, $width, $height)")
 	// 	if (holder.getSurface == null) {
 	// 		// preview surface does not exist
 	// 		return
@@ -96,3 +136,8 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 	// 	}
 	}
 }
+
+
+
+
+    
