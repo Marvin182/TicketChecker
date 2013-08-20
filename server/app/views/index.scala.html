@@ -1,17 +1,22 @@
-@()(implicit request: RequestHeader, lang: Lang)
+@(user: String)(implicit request: RequestHeader, lang: Lang)
 
 @import de.mritter.ticketchecker.server.Db
 @import org.squeryl.PrimitiveTypeMode._
 
 @main{
 
-<div class="navbar">
-	<a class="navbar-brand" href="#">@Messages("title")</a>
+<nav class="navbar navbar-default" role="navigation">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="#">@Messages("title")</a>
+	</div>
 	<div class="progress progress-striped">
 		<div id="checkInProgress" class="progress-bar progress-bar-warning"></div>
 	</div>
-	<button id="logout" type="button" class="btn btn-default navbar-btn pull-right">@Messages("logout")</button>
-</div>
+	<ul class="nav navbar-nav navbar-right">
+		<li><a class="" href="#">@Messages("loggedInAs", user)</a></li>
+		<li><button id="logout" type="button" class="btn btn-default navbar-btn btn-sm">@Messages("logout")</button></li>
+	</ul>
+</nav>
 
 <div class="content">
 

@@ -1,9 +1,0 @@
-[0m[[0minfo[0m] [0mGenerating R.java[0m
-[0m[[0mdebug[0m] [0mAll libs: List()[0m
-[0m[[0mdebug[0m] [0mAll packages: List()[0m
-[0m[[0mdebug[0m] [0mpackageForR: de.mritter.ticketchecker.android[0m
-[0m[[0mdebug[0m] [0mproguard.txt: C:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\bin\proguard.txt[0m
-[0m[[0mdebug[0m] [0mIn modified: Set(C:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\bin\resources\res\layout\main.xml)[0m
-[0m[[0mdebug[0m] [0mInRemoved: Set()[0m
-[0m[[0mdebug[0m] [0mOut checked: Set(C:\Users\Marvin\Dropbox\workspace\TicketChecker\clients\android-sbt\gen\de\mritter\ticketchecker\android\R.java)[0m
-[0m[[0mdebug[0m] [0mOut modified: Set()[0m

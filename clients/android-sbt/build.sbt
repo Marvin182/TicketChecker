@@ -6,7 +6,7 @@ name := "TicketChecker"
  
 scalaVersion := "2.10.2"
  
-scalacOptions in Compile += "-feature"
+scalacOptions in Compile ++= Seq("-deprecation", "-feature")
  
 proguardOptions in Android ++= Seq("-dontobfuscate"," -dontoptimize")
 

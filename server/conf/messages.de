@@ -7,6 +7,7 @@ login.loginFailedMsg=Fehler beim Anmelden. Bitte überprüfen Sie Name und Passw
 login.login=Anmelden
 
 title=Ticket Checker
+loggedInAs=Angemeldet als {0}
 logout=Abmelden
 
 tickets.order=Bestellnummer

@@ -7,6 +7,7 @@ login.loginFailedMsg=Could not log in, check your name and password.
 login.login=Sign in
 
 title=Ticket Checker
+loggedInAs=Logged in as {0}
 logout=Logout
 
 tickets.order=Order Number

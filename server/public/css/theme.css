@@ -36,6 +36,10 @@ body, html {
 	float: left;
 	margin: 15px 0 0 30px;
 }
+#checkInProgress {
+	color: #777;
+	font-weight: bold;
+}
 .content {
 	width: 95%;
 	margin: 1em auto;

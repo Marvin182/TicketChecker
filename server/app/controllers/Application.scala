@@ -29,7 +29,7 @@ object Application extends Controller {
 	def index = Action { implicit request =>
 		getUserOptFromSession(request.session) match {
 			case None => Ok(views.html.login())
-			case Some(user) => inTransaction { Ok(views.html.index()) }
+			case Some(user) => inTransaction { Ok(views.html.index(user.name)) }
 		}
 		
 	}

@@ -25,7 +25,11 @@ import de.mritter.ticketchecker.api._
 
 object Main {
   	// load native library for zbar
-	System.loadLibrary("iconv")
+  	try {
+		System.loadLibrary("iconv")
+	} catch {
+		case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
+	}
 }
 
 class Main extends Activity {
@@ -50,8 +54,8 @@ class Main extends Activity {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.main)
 
-		// hostAddress.setText("192.168.173.1")
 		hostAddress.setText("192.168.178.34")
+		// hostAddress.setText("shubit.no-ip.biz")
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
 				ticketApi.connect(hostAddress.getText.toString)
@@ -102,7 +106,7 @@ class Main extends Activity {
 					}
 				}
 			} catch {
-			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
+				case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
 			}
 		}
 	}

@@ -2,6 +2,6 @@
 package de.mritter.ticketchecker.android;
 
 public final class BuildConfig {
-    public final static boolean DEBUG = false;
+    public final static boolean DEBUG = true;
 
 }
