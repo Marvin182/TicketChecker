@@ -13,13 +13,13 @@ import android.hardware.{Camera, Sensor, SensorEventListener, SensorEvent, Senso
 
 import de.mritter.android.common._
 
-class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback  with SensorEventListener {
+class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback {
 
 	private var camera: Camera = null
 
 	getHolder.addCallback(this)
-	getHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS) // deprecated setting, but required on Android versions prior to 3.0
-	
+	// deprecated setting, but required on Android versions prior to 3.0
+	// getHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
 
 	def pause {
 		if (camera != null) {
@@ -27,10 +27,6 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 			camera.setPreviewCallback(null)
 			camera.release
 			camera = null
-		}
-
-		if (lightSensor != null) {
-			sensorManager.unregisterListener(this)
 		}
 	}
 
@@ -54,10 +50,6 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 			})
 			camera.startPreview
 		}
-
-		if (lightSensor != null) {
-			sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
-		}
 	}
 
 	def setTorch(on: Boolean) {
@@ -67,25 +59,6 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 		else
 			params.setFlashMode("off")
 		camera.setParameters(params)
-	}
-
-	val sensorManager = context.getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
-	val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
-	if (lightSensor == null) {
-		log.w("Sensor.TYPE_LIGHT not available!")
-	}
-
-	// SensorEventListener
-	override def onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
-
-	var torchOn = false
-	override def onSensorChanged(event: SensorEvent) {
-		val isDark = event.values(0) < 30
-		if (torchOn != isDark) {
-			torchOn = !torchOn
-			setTorch(torchOn)
-		}
-		// log.v("sensorManager.onSensorChanged() " + event.values(0))
 	}
 	
 	// regularly trigger autofocus

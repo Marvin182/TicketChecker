@@ -116,6 +116,10 @@ class Main extends Activity {
 		checkinProgressBar.setProgress(stats.ticketsCheckedIn)
 	}
 
+	def toggleTorch(view: View) {
+		cameraPreview.setTorch(view.asInstanceOf[CheckBox].isChecked)
+	}
+
 	private def runOnUiThread(f: => Unit) {
 		runOnUiThread {
 			new Runnable() {

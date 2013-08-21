@@ -13,6 +13,7 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:orientation="horizontal" >
         <EditText
             android:id="@+id/host"
@@ -44,11 +45,22 @@
         android:layout_height="wrap_content" >
     </ListView>
 
-    <Button
-        android:id="@+id/clear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/clear" />
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+        <CheckBox android:id="@+id/toggle_torch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/torch"
+            android:onClick="toggleTorch"/>
+
+        <Button
+            android:id="@+id/clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clear" />
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/preview"
