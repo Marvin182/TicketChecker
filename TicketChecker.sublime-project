@@ -8,8 +8,8 @@
 		},
 		{
 			"name": "App",
-			"path": "clients/android-eclipse",
-			"folder_exclude_patterns": ["project/project", "project/target", "target"]
+			"path": "clients/android-sbt",
+			"folder_exclude_patterns": ["bin", "project/project", "project/target", "target"]
 		},
 		{
 			"name": "Root",
