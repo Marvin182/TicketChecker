@@ -52,7 +52,7 @@ class Api extends Actor {
 		}.getOrElse(con send ApiError(-1, "Missing typ parameter in request!", Some(msg)))
 	}
 
-	private def createConnection(user: User) = {
+	private def createConnection(user: UserDb) = {
 		val (out, channel) = Concurrent.broadcast[JsValue]
 		val con = new Connection(user, channel)
 		connections += con
@@ -101,10 +101,10 @@ class Api extends Actor {
 	implicit def ticketDb2TicketDetails(t: TicketDb): TicketDetails = TicketDetails(t.id, t.order, t.code, t.forename, t.surname, t.table, t.checkedIn, t.checkedInBy.headOption.map(_ name), t.checkInTime)
 }
 
-case class Connect(user: User)
+case class Connect(user: UserDb)
 case class Connected(in: Iteratee[JsValue, Unit], out: Enumerator[JsValue])
 
-class Connection(val user: User, private val channel: Channel[JsValue]) {
+class Connection(val user: UserDb, private val channel: Channel[JsValue]) {
 	def send[T](msg: T)(implicit write: Writes[T]) {
 		val msgJson = Json.toJson(msg).asInstanceOf[JsObject]
 		Logger.info("api send to " + user.name + " " + (msgJson + typ(msg)))

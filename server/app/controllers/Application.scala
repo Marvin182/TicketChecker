@@ -35,7 +35,6 @@ object Application extends Controller {
 	}
 
 	def login(name: String, password: String) = Action { implicit request =>
-		Logger.info(s"login($name, $password)")
 		getUserOpt(name, password) match {
 			case None => Ok("0")
 			case Some(user) => {
@@ -69,11 +68,11 @@ object Application extends Controller {
 		}
 	}
 
-	private def getUserOpt(name: String, password: String): Option[User] = inTransaction {
+	private def getUserOpt(name: String, password: String): Option[UserDb] = inTransaction {
 		Db.users.where(u => lower(u.name) === lower(name) and u.password === password).headOption
 	}
 
-	private def getUserOptFromSession(session: Session): Option[User] = session.get("id") match {
+	private def getUserOptFromSession(session: Session): Option[UserDb] = session.get("id") match {
 		case Some(id: String) => inTransaction {
 			Db.sessions.lookup(id) match {
 				case None => None

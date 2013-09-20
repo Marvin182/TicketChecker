@@ -8,7 +8,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.annotations.Column
 
 object Db extends Schema {
-	val users = table[User]("users")
+	val users = table[UserDb]("users")
 	val sessions = table[SessionDb]("sessions")
 	val tickets = table[TicketDb]("tickets")
 
@@ -16,10 +16,10 @@ object Db extends Schema {
 	val userToCheckInTickets = oneToManyRelation(users, tickets).via((u, t) => u.id === t.checkedInById)
 }
    
-class User(val id: Long,
+class UserDb(val id: Long,
 			val name: String,
-			val password: String,
-			val isAdmin: Boolean) extends KeyedEntity[Long] {
+			var password: String,
+			var isAdmin: Boolean = false) extends KeyedEntity[Long] {
 	def this() = this(0, "", "", false)
 
 	lazy val sessions: OneToMany[SessionDb] = Db.userToSessions.left(this)
@@ -36,7 +36,7 @@ class SessionDb(val id: String,
 
 	def valid = timestamp + 864000 > System.currentTimeMillis / 1000
 
-	lazy val user: ManyToOne[User] = Db.userToSessions.right(this)
+	lazy val user: ManyToOne[UserDb] = Db.userToSessions.right(this)
 }
 
 class TicketDb(val id: Long,
@@ -44,15 +44,16 @@ class TicketDb(val id: Long,
 				val code: String,
 				val forename: String,
 				val surname: String,
+				val student: Boolean,
 				@Column("tableNumber") var table: Int,
-				var checkedIn: Boolean,
-				var checkedInById: Option[Long],
-				var checkInTime: Option[Long]) extends KeyedEntity[Long] {
-	def this() = this(0, 0, "","", "", -1, false, None, None)
+				var checkedIn: Boolean = false,
+				var checkedInById: Option[Long] = None,
+				var checkInTime: Option[Long] = None) extends KeyedEntity[Long] {
+	def this() = this(0, 0, "","", "", false, 0, false, None, None)
 
-	lazy val checkedInBy: ManyToOne[User] = Db.userToCheckInTickets.right(this)
+	lazy val checkedInBy: ManyToOne[UserDb] = Db.userToCheckInTickets.right(this)
 
-	def checkIn(user: User) = inTransaction {
+	def checkIn(user: UserDb) = inTransaction {
 		checkedIn = true
 		checkedInById = Some(user.id)
 		checkInTime = Some(System.currentTimeMillis / 1000)

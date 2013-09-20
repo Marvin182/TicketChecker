@@ -6,7 +6,7 @@ $ ->
 	$('#logout').click ->
 		$.get '/logout', -> window.location.reload()
 
-	$('#tickets').tablesorter({sortList:[[1, 0], [5, 0]]})
+	$('#tickets').tablesorter({sortList:[[0, 0], [4, 0]]})
 	$('.check-in-time').each ->
 		text = $(this).text()
 		if (text.length) then $(this).text(new Date(1000 * text).format('HH:MM:ss'))

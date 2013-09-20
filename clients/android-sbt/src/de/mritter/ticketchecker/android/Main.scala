@@ -4,6 +4,7 @@ import scala.collection.JavaConversions._
 
 import android.os.{Bundle, Handler}
 import android.app.Activity
+import android.content.Context
 import android.widget._
 import android.view.{View, Menu}
 import android.hardware._
@@ -32,6 +33,7 @@ class Main extends Activity {
 	Main  
   
 	val ticketApi = new TicketApi
+	// val preferences = getPreferences(Context.MODE_PRIVATE)
 
 	var cameraPreview: CameraPreview = null
 	var tickets: TicketListAdapter = null
@@ -50,10 +52,12 @@ class Main extends Activity {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.main)
 
-		// hostAddress.setText("192.168.178.34")
-		hostAddress.setText("shubit.no-ip.biz")
+		// hostAddress.setText(preferences.getString("host", "shubit.no-ip.biz"))
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
+				// val editor = preferences.edit
+				// editor.putString("host", hostAddress.getText.toString)
+				// editor.commit
 				ticketApi.connect(hostAddress.getText.toString)
 			}
 		})
