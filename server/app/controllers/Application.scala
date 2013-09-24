@@ -25,13 +25,13 @@ object Application extends Controller {
 
 	val system = ActorSystem("actorSystem")
 	val apiActor = system.actorOf(Props[Api], "api")
+	val projectionTask = system.scheduler.schedule(1 seconds, 1 seconds, apiActor, SendProjection) // interval can be increased to 5-30 seconds save some performance
 
 	def index = Action { implicit request =>
 		getUserOptFromSession(request.session) match {
 			case None => Ok(views.html.login())
 			case Some(user) => inTransaction { Ok(views.html.index(user.name)) }
 		}
-		
 	}
 
 	def login(name: String, password: String) = Action { implicit request =>
@@ -53,7 +53,7 @@ object Application extends Controller {
 
 	def api(name: String = "", password: String = "") = WebSocket.async[JsValue] { request => 
 		getUserOptFromSession(request.session).orElse(getUserOpt(name, password)) match {
-			case None => future { error(-4, "Not authenficated. Please sign in again.") }
+			case None => future { error(-4, "Not authenticated. Please sign in again.") }
 			case Some(user) => {
 				try {
 					implicit val timeout = Timeout(5 seconds)

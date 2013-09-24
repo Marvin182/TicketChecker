@@ -40,13 +40,15 @@ class SessionDb(val id: String,
 }
 
 class TicketDb(val id: Long,
+				// order, code, forename and surname are printed on the ticket and therefor immutable
 				@Column("orderNumber") val order: Int,
 				val code: String,
 				val forename: String,
 				val surname: String,
-				val student: Boolean,
+				var isStudent: Boolean,
 				@Column("tableNumber") var table: Int,
 				var checkedIn: Boolean = false,
+				// optional values, should be Some() if checkedIn is true
 				var checkedInById: Option[Long] = None,
 				var checkInTime: Option[Long] = None) extends KeyedEntity[Long] {
 	def this() = this(0, 0, "","", "", false, 0, false, None, None)
@@ -59,6 +61,7 @@ class TicketDb(val id: Long,
 		checkInTime = Some(System.currentTimeMillis / 1000)
 		Db.tickets.update(this)
 	}
+	// "check out"
 	def decline = inTransaction {
 		checkedIn = false
 		checkedInById = None
