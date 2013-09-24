@@ -8,7 +8,7 @@ create table tickets (
 	code varchar(16) not null,
 	forename varchar(45) not null,
 	surname varchar(45) not null,
-	student boolean not null default 0,
+	isStudent boolean not null default 0,
 	tableNumber int unsigned not null default 0,
 	checkedIn boolean not null default 0,
 	checkedInById int unsigned,

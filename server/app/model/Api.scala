@@ -17,6 +17,9 @@ import de.mritter.ticketchecker.api._
 
 class Api extends Actor {
 
+	private val predictionMinMeasureTime = 10
+	private val perdictionMaxMeasureTime = 300
+
 	private val connections = new HashSet[Connection]
 
 	def receive = {
@@ -32,19 +35,23 @@ class Api extends Actor {
 			sender ! Connected(in, out)
 			initConnection(con)
 		}
+		case SendProjection => sendAll(projection)
 	}
 
 	private def receiveMessage(con: Connection, msg: JsValue) {
-		Logger.info(s"api receive $msg")
+		// Logger.info(s"api receive $msg")
 		(msg \ "typ").asOpt[String].map{ typ =>
 			def isAnsweredBy[T : ClassTag](needsAdmin: Boolean, callback: (Connection, T) => Unit)(implicit readT: Reads[T]): Boolean = {
 				val requiredTyp = classTag[T].runtimeClass.getSimpleName
-				if (typ != requiredTyp) return false
-				if (needsAdmin && !con.user.isAdmin)
-					con send ApiError(-4, s"Request $requiredTyp needs higher permissions!")
-				else
-					Json.fromJson[T](msg).map(t => callback(con, t)).getOrElse(con send ApiError(-3, s"Invalid $requiredTyp request!", Some(msg)))
-				true
+				if (typ != requiredTyp)
+					false
+				else {
+					if (needsAdmin && !con.user.isAdmin)
+						con send ApiError(-4, s"Request $requiredTyp needs higher permissions!")
+					else
+						Json.fromJson[T](msg).map(t => callback(con, t)).getOrElse(con send ApiError(-3, s"Invalid $requiredTyp request!", Some(msg)))
+					true
+				}
 			}
 			isAnsweredBy[CheckInTicket](false, tryCheckInTicket) ||
 			isAnsweredBy[DeclineTicket](true, declineTicket) ||
@@ -65,13 +72,38 @@ class Api extends Actor {
 	
 	private def dispatchConnection(con: Connection) {
 		connections -= con
-		sendAll(s"${con.user} disconnected")
 	}
 
 	private def eventStats = inTransaction {
-		val checkedIn: Int = from(Db.tickets)(t => where(t.checkedIn === true) compute(count)).single.measures.toInt
+		val checkedIn = from(Db.tickets)(t => where(t.checkedIn === true) compute(count)).single.measures.toInt
 		val total = from(Db.tickets)(t => compute(count)).single.measures.toInt
 		EventStats(checkedIn, total)
+	}
+
+	private def projection: Projection = inTransaction {
+		val now = (System.currentTimeMillis / 1000).toInt
+		val notCheckedIn = from(Db.tickets)(t => where(t.checkedIn === false) compute(count)).single.measures.toInt
+		if (notCheckedIn == 0)
+			return Projection(0, Some(now))
+
+		val firstCheckInTime = from(Db.tickets)(t => where(t.checkedIn === true) compute(min(t.checkInTime))).single.measures.getOrElse(-1L).toInt
+		if (firstCheckInTime == -1)
+			return Projection(0, None)
+
+		val diff = now - firstCheckInTime
+		val measureTime =
+			if (diff > perdictionMaxMeasureTime) perdictionMaxMeasureTime
+			else if (diff < predictionMinMeasureTime) predictionMinMeasureTime
+			else now - firstCheckInTime
+		val measureStart = now - measureTime
+		val measuredValue = from(Db.tickets)(t => where(nvl(t.checkInTime, 0) >= measureStart) compute(count)).single.measures.toInt
+
+		if (measuredValue == 0)
+			return Projection(0, None)
+			
+		val checkInsPerSec = measuredValue.toDouble / measureTime
+		val predictedCheckInDone = (System.currentTimeMillis / 1000 + notCheckedIn / checkInsPerSec).toInt
+		Projection(60 * checkInsPerSec, Some(predictedCheckInDone))
 	}
 
 	private def tryCheckInTicket(con: Connection, ct: CheckInTicket) = inTransaction {
@@ -98,17 +130,18 @@ class Api extends Actor {
 		connections.foreach(_.send(msg))
 	}
 
-	implicit def ticketDb2TicketDetails(t: TicketDb): TicketDetails = TicketDetails(t.id, t.order, t.code, t.forename, t.surname, t.table, t.checkedIn, t.checkedInBy.headOption.map(_ name), t.checkInTime)
+	implicit def ticketDb2TicketDetails(t: TicketDb): TicketDetails = TicketDetails(t.id, t.order, t.code, t.forename, t.surname, t.isStudent, t.table, t.checkedIn, t.checkedInBy.headOption.map(_ name), t.checkInTime)
 }
 
 case class Connect(user: UserDb)
 case class Connected(in: Iteratee[JsValue, Unit], out: Enumerator[JsValue])
+case object SendProjection
 
 class Connection(val user: UserDb, private val channel: Channel[JsValue]) {
 	def send[T](msg: T)(implicit write: Writes[T]) {
 		val msgJson = Json.toJson(msg).asInstanceOf[JsObject]
-		Logger.info("api send to " + user.name + " " + (msgJson + typ(msg)))
 		channel.push(msgJson + typ(msg))
+		// Logger.info("api send to " + user.name + " " + (msgJson + typ(msg)))
 	}
 
 	private def typ[T](msg: T) = ("typ", Json.toJson(msg.getClass.getSimpleName))
