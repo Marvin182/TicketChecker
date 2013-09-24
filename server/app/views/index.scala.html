@@ -5,22 +5,35 @@
 
 @main{
 
-<nav class="navbar navbar-default" role="navigation">
-	<div class="navbar-header">
-		<a class="navbar-brand" href="#">@Messages("title")</a>
+<header class="navbar navbar-default navbar-fixed-top" role="banner">
+	<div class="nav-container">
+		<a href="index.html" class="navbar-brand">@Messages("title")</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+			<span class="sr-only">Navigation umschalten</span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+		<div class="pull-right collapse navbar-collapse">
+			@Messages("loggedInAs", user)<button id="logout" type="button" class="btn btn-default navbar-btn btn-sm">@Messages("logout")</button>
+		</div>
+		<div class="middle">
+			<div class="progress progress-striped check-in-progress">
+				<div id="progress-checked-in" class="progress-bar progress-bar-success"></div>
+				<div id="progress-not-checked-in" class="progress-bar"></div>
+				<div id="progress-text"></div>
+			</div>
+		</div>
 	</div>
-	<div class="progress progress-striped">
-		<div id="checkInProgress" class="progress-bar progress-bar-warning"></div>
-	</div>
-	<ul class="nav navbar-nav navbar-right">
-		<li><a class="" href="#">@Messages("loggedInAs", user)</a></li>
-		<li><button id="logout" type="button" class="btn btn-default navbar-btn btn-sm">@Messages("logout")</button></li>
-	</ul>
-</nav>
+</header>
 
 <div class="content">
 
 	<div id="alerts"></div>
+
+	<p>
+		@Messages("tickets.predictedEnd"): <span class="predicted-check-in-done"></span> (<span class="check-in-speed"></span> @Messages("tickets.checkInsPerMin"))
+	</p>
 
 	<table id="tickets" class="table table-striped table-condensed">
 	<thead>
@@ -29,6 +42,7 @@
 			<th><i class="icon-sort"></i> @Messages("tickets.code")</th>
 			<th><i class="icon-sort"></i> @Messages("tickets.forename")</th>
 			<th><i class="icon-sort"></i> @Messages("tickets.surname")</th>
+			<th><i class="icon-sort"></i> @Messages("tickets.isStudent")</th>
 			<th><i class="icon-sort"></i> @Messages("tickets.table")</th>
 			<th><i class="icon-sort"></i> @Messages("tickets.checkedInBy")</th>
 			<th><i class="icon-sort"></i> @Messages("tickets.checkInTime")</th>
@@ -42,6 +56,7 @@
 			<td class="code">@t.code</td>
 			<td>@t.forename</td>
 			<td>@t.surname</td>
+			<td>@(if(t.isStudent) Messages("yes") else Messages("no"))</td>
 			<td>@t.table</td>
 			<td class="check-in-by">@t.checkedInBy.headOption.map(_ name).getOrElse("")</td>
 			<td class="check-in-time">@t.checkInTime.map(_ + "").getOrElse("")</td>

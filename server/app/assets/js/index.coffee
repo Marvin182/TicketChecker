@@ -19,25 +19,35 @@ $ ->
 
 class Api
 	constructor: (url, alert) ->
+		at = @
+		@connected = false
 		@ws = new WebSocket(url)
 		@ws.onopen = ->
 			alert.info "Connected!", 5
+			at.connected = true
 		@ws.onclose = ->
-			alert.error "Connection lost! Reloading page in 10 seconds.", 15
-			window.setTimeout((-> window.location.reload()), 10000)
+			at.connected = false
+			$e = alert.error "Connection lost! Trying to reconnect ...", -1
+			at.reconnect.call at, $e
 		@ws.onerror = (error)->
 			alert.error "API Error! See JavaScript console."
-			console.log error
+			console.log "api websocket error", error
 		@ws.onmessage = (e) ->
 			msg = JSON.parse(e.data)
-			console.log "api receive", msg
+			# console.log "api receive", msg
 			switch msg.typ
 				when "EventStats"
 					p = if (msg.ticketsTotal > 0) then (msg.ticketsCheckedIn / msg.ticketsTotal) else 0
-					$('#checkInProgress').css('width', 100 * p + '%').text(if msg.ticketsCheckedIn > 0 then "#{msg.ticketsCheckedIn} / #{msg.ticketsTotal}" else "")
+					$('#progress-checked-in').css('width', 100 * p + '%')
+					$('#progress-not-checked-in').css('width', 100 * (1-p) + '%')
+					$('#progress-text').text("#{msg.ticketsCheckedIn} / #{msg.ticketsTotal}")
+				when "Projection"
+					predictedChechInDoneTime = if msg.predictedChechInDoneTime then new Date(1000 * msg.predictedChechInDoneTime).format('d.m.yy HH:MM:ss') else ''
+					$('.predicted-check-in-done').text(predictedChechInDoneTime)
+					$('.check-in-speed').text(msg.checkInsPerMin.toFixed(1))
 				when "CheckInTicketSuccess"
 					t = msg.details
-					alert.success t.forename + " " + t.surname + " checked in.", 3
+					alert.success t.forename + " " + t.surname + " checked in.", 4
 					row = $('#ticket-' + t.id)
 					row.find('.check-in-by').text(t.checkedInBy)
 					row.find('.check-in-time').text(new Date(1000 * t.checkInTime).format('HH:MM:ss'))
@@ -49,11 +59,12 @@ class Api
 					row.find('.action-check-in').show()
 					row.find('.action-decline').hide()
 				when "ApiError"
-					alert.error(msg.msg)
+					alert.error msg.msg
 
 	send: (obj) ->
-		console.log "api send", obj
-		@ws.send JSON.stringify obj
+		if (@connected)
+			# console.log "api send", obj
+			@ws.send JSON.stringify obj
 
 	checkInTicket: (order, code) -> @send
 			typ: "CheckInTicket"
@@ -63,21 +74,53 @@ class Api
 			typ: "DeclineTicket"
 			id: parseInt(id)
 
+	reconnect: ($e) ->
+		retryEvery = 15 # seconds
+		at = @
+		$.ajax window.location.href,
+			type: 'GET'
+			timeout: 10000
+			success: ->
+				$e.text "Reconnecting ..."
+				$e.removeClass 'alert-danger'
+				$e.addClass 'alert-success'
+				window.location.reload()
+			error: ->
+				nextRetry = new Date(new Date().getTime() + 1000 * retryEvery)
+				$e.html '<strong>Not connected!</strong> Next try in <span class="seconds">' + retryEvery + '</span> seconds.'
+				wait = ->
+					diff = nextRetry - new Date()
+					if (diff < 0)
+						$e.html '<strong>Not connected!</strong> Trying to reconnect ...'
+						at.reconnect.call at, $e
+					else
+						$e.find('.seconds').text Math.ceil(diff / 1000)
+						window.setTimeout(wait, 1000)
+				wait()
+
 class Alert
 	constructor: (@root) ->
 		@c = 0
 	inc: -> @c++
-	dec: -> if (--@c == 0) then $(@root).empty()
+	dec: ($e) -> if (--@c == 0) then @autoRemoveAlerts().remove() else if (@autoRemoveAlerts().length > 5) then $e.remove()
+	autoRemoveAlerts: -> $('.alert.auto-remove', @root)
 	newAlert: (text, type = 'info', time = 10) ->
 		pos = text.indexOf('!')
 		if (~pos)
 			text = '<strong>' + text.substr(0, pos + 1) + '</strong>' + text.substr(pos + 1)
-		e = $('<div class="alert alert-' + type + '">' + text + '</div>').appendTo(@root)
-		at = @
-		@.inc()
-		e.animate({opacity:0.001}, 1000 * time, -> at.dec())
-		e
+		$e = $('<div class="alert alert-' + type + '">' + text + '</div>').appendTo(@root)
+		if (time > 0)
+			at = @
+			at.inc()
+			$e.addClass('auto-remove').animate({opacity: 0}, 1000 * time, -> at.dec($e))
+		$e
 	info: (text, time) -> @newAlert(text, 'info', time)
 	success: (text, time) -> @newAlert(text, 'success', time)
 	error: (text, time) -> @newAlert(text, 'danger', time)
 	warn: (text, time) -> @newAlert(text, 'warn', time)
+
+
+
+
+
+

@@ -14,7 +14,7 @@ signIn = ->
 			times: 2
 			500
 		)
-	console.log('name=' + $('#name').val() + '&password=' + $('#password').val())
+
 	# query the server for login, if the login data is correct the server saves this in the session and answers 1, otherwise 0
 	$.ajax
 		url: 'login'

@@ -6,20 +6,19 @@ import android.os.{Bundle, Handler}
 import android.app.Activity
 import android.content.Context
 import android.widget._
-import android.view.{View, Menu}
+import android.view.{View, Menu, MenuItem}
 import android.hardware._
 import android.hardware.Camera._
 import android.content.pm.ActivityInfo
 
-import java.net.URI
-import java.net.URISyntaxException
-import org.java_websocket.WebSocketImpl
-import org.java_websocket.client.WebSocketClient
-import org.java_websocket.handshake.ServerHandshake
+
+import android.os.AsyncTask
+
+
 
 import net.sourceforge.zbar._
 
-// import android.support.v7.app.ActionBar
+import android.support.v7.app.ActionBar
 
 import de.mritter.android.common._
 import de.mritter.ticketchecker.api._
@@ -33,7 +32,7 @@ class Main extends Activity {
 	Main  
   
 	val ticketApi = new TicketApi
-	// val preferences = getPreferences(Context.MODE_PRIVATE)
+	lazy val preferences = getPreferences(Context.MODE_PRIVATE)
 
 	var cameraPreview: CameraPreview = null
 	var tickets: TicketListAdapter = null
@@ -48,16 +47,20 @@ class Main extends Activity {
 	lazy val clearButton = find[Button](R.id.clear)
 	lazy val checkinProgressBar = find[ProgressBar](R.id.checkin_progress)
 
+	lazy val actionBar = getActionBar
+
 	override def onCreate(savedInstanceState: Bundle) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.main)
 
-		// hostAddress.setText(preferences.getString("host", "shubit.no-ip.biz"))
+		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM)
+
+		hostAddress.setText(preferences.getString("host", "192.168.137.1"))
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
-				// val editor = preferences.edit
-				// editor.putString("host", hostAddress.getText.toString)
-				// editor.commit
+				val editor = preferences.edit
+				editor.putString("host", hostAddress.getText.toString)
+				editor.commit
 				ticketApi.connect(hostAddress.getText.toString)
 			}
 		})
@@ -77,7 +80,7 @@ class Main extends Activity {
 
 	override def onCreateOptionsMenu(menu: Menu) = {
 		getMenuInflater().inflate(R.menu.main, menu)
-		true
+		super.onCreateOptionsMenu(menu)
 	}
 
 	override def onResume() {
@@ -112,23 +115,55 @@ class Main extends Activity {
 	}
 
 	ticketApi.onTicketStatusChange = ((ticket: Ticket, status: Int, details: Option[TicketDetails]) =>
-		runOnUiThread(tickets.update(ticket, status, details))
+		runOnGUiThread(tickets.update(ticket, status, details))
 	)
 
-	ticketApi.onEventStatsUpdate = (stats: EventStats) => runOnUiThread {
+	ticketApi.onEventStatsUpdate = (stats: EventStats) => runOnGUiThread {
 		checkinProgressBar.setMax(stats.ticketsTotal)
 		checkinProgressBar.setProgress(stats.ticketsCheckedIn)
 	}
 
-	def toggleTorch(view: View) {
+	private def toggleTorch(view: View) {
 		cameraPreview.setTorch(view.asInstanceOf[CheckBox].isChecked)
 	}
 
-	private def runOnUiThread(f: => Unit) {
+	private def runOnGUiThread(f: => Unit) {
 		runOnUiThread {
 			new Runnable() {
 				def run() {	f }
 			}
+		}
+	}
+
+
+
+	private var menuItem: MenuItem = null
+	override def onOptionsItemSelected(item: MenuItem) = item.getItemId match {
+		case R.id.menu_load =>
+			menuItem = item
+			menuItem.setActionView(R.layout.progressbar)
+			menuItem.expandActionView
+			// val task = new TestTask
+			// task.execute("test")
+			true
+		case _ => super.onOptionsItemSelected(item)
+	}
+
+	private class TestTask extends AsyncTask[String, Unit, String] {
+
+		override def doInBackground(params: String*): String = {
+			// Simulate something long running
+			try {
+				Thread.sleep(2000)
+			} catch {
+				case e: Throwable => e.printStackTrace
+			}
+			null
+		}
+
+		override def onPostExecute(result: String) {
+			menuItem.collapseActionView
+			menuItem.setActionView(null)
 		}
 	}
 }

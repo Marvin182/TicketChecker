@@ -13,14 +13,13 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:orientation="horizontal" >
         <EditText
             android:id="@+id/host"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="@string/host_hint"
-            android:text="192.168.178.34" >
+            android:text="192.168.137.1" >
         </EditText>
 
         <Button

@@ -25,7 +25,7 @@ object Application extends Controller {
 
 	val system = ActorSystem("actorSystem")
 	val apiActor = system.actorOf(Props[Api], "api")
-	val projectionTask = system.scheduler.schedule(1 seconds, 1 seconds, apiActor, SendProjection) // interval can be increased to 5-30 seconds save some performance
+	val projectionTask = system.scheduler.schedule(1 seconds, 1 seconds, apiActor, SendProjection) // interval could be increased to 5-30 seconds save some performance
 
 	def index = Action { implicit request =>
 		getUserOptFromSession(request.session) match {

@@ -34,7 +34,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 	val colorSuccess = 0xff00b30f // green
 	val colorWarning = 0xffd65600 // orange
 	val colorDanger  = 0xffb30000 // red
-	val dt = new SimpleDateFormat("hh:mm:ss");
+	val dateFormat = new SimpleDateFormat("HH:mm:ss");
 
 	private def bigTicket(t: Ticket): BigTicket = tickets.find(x => x.order == t.order && x.code == t.code).getOrElse(new BigTicket(t.order, t.code))
 
@@ -87,7 +87,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 				(s"$id: Error!", colorDefault)
 			}
 			case 2 => t.details.map { d =>
-					val time = dt.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
+					val time = dateFormat.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
 					(s"${d.forename} ${d.surname} Checked already in at $time", colorWarning)
 				} getOrElse {
 					Log.w(TAG, "No ticket details found for CheckInFailed.")

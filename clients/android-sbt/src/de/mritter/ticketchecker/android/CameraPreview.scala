@@ -83,8 +83,8 @@ class CameraPreview(context: Context, protected val previewFrameCb: (Array[Byte]
 	}
 
 	def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int): Unit = {
-		log.d(s"CameraPreview.surfaceChanged($format, $width, $height)")
-	// 	if (holder.getSurface == null) {
+		// log.d(s"CameraPreview.surfaceChanged($format, $width, $height)")
+		// if (holder.getSurface == null) {
 	// 		// preview surface does not exist
 	// 		return
 	// 	}

@@ -1,5 +1,8 @@
 lang=en
 
+yes=yes
+no=no
+
 login.header=Please sign in
 login.name=Name
 login.password=Password
@@ -10,10 +13,14 @@ title=Ticket Checker
 loggedInAs=Logged in as {0}
 logout=Logout
 
+tickets.predictedEnd=Predictide End
+tickets.checkInsPerMin=Check-Ins / min
+
 tickets.order=Order Number
 tickets.code=Ticket Code
 tickets.forename=Forename
 tickets.surname=Surname
+tickets.isStudent=Student
 tickets.table=Table
 tickets.checkedIn=Checked-In
 tickets.checkedInBy=Checked-In By

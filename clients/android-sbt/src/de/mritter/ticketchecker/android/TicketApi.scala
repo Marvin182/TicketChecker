@@ -15,7 +15,7 @@ class TicketApi {
 		val url = s"ws://$host:9000/api"
 		try {
 			ws = new WebSocket(url, receive)
-			log.i(s"connecting to $url")
+			log.v(s"connecting to $url")
 			ws.connect
 		} catch {
 			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
@@ -25,16 +25,15 @@ class TicketApi {
 	def send[T](msg: T)(implicit write: Writes[T]) {
 		val msgJson = Json.toJson(msg).asInstanceOf[JsObject]
 		val text = (msgJson + typ(msg)).toString
-		log.i("api send " + text)
+		// log.v("api send " + text)
 		ws sendText text
 	}
 
 	private	def typ[T](msg: T) = ("typ", Json.toJson(msg.getClass.getSimpleName))
 
 	private def receive(msg: String) {
-		log.i(s"api receive $msg")
+		// log.v(s"api receive $msg")
 		val json = Json.parse(msg)
-		log.i(s"json=$json")
 		(json \ "typ").asOpt[String].map{ typ => 
 			def isAnsweredBy[T : ClassTag](callback: T => Unit)(implicit readT: Reads[T]): Boolean = {
 				val requiredTyp = classTag[T].runtimeClass.getSimpleName

@@ -30,25 +30,44 @@ body, html {
 }
 
 /* Tickets */
-.navbar .progress {
-	width: 50%;
-	max-width: 500px;
-	float: left;
-	margin: 15px 0 0 30px;
+.middle {
+	overflow: hidden;
+	position: relative;
+	min-width: 100px;
 }
-#checkInProgress {
-	color: #777;
+.progress {
+	position: relative;
+}
+.check-in-progress {
+	width: 100%;
+	height: 26px;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	margin: 10px 0;
+}
+#progress-text {
+	position: absolute;
+	width: 100%;
+	left: 0;
+	color: #fff;
+	text-align: center;
 	font-weight: bold;
+	font-size: 18px;
+	z-index: 2;
+}
+#logout, .navbar-toggle {
+	margin-left: 12px;
 }
 .content {
 	width: 95%;
-	margin: 1em auto;
+	margin: 70px auto 15px auto;
 }
 #alerts {
 	position: relative;
-	top: -30px;
-	height: 80px;
-	max-height: 80px;
+	top: -10px;
+	width: 100%;
+	height: 0;
 	max-width: 500px;
 	margin: 0 auto;
 }

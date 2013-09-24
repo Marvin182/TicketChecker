@@ -41,3 +41,8 @@ class WebSocket(url: String, onMsg: String => Unit) extends WebSocketClient(new 
 		log.v("WebSocket.onError " + x.toString)
 	}
 }
+
+sealed trait WebSocketEvent
+case class WebSocketClose(code: Int, reason: String, remote: Boolean)
+case class WebSocketError(x: Exception)
+c

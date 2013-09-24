@@ -27,11 +27,11 @@ object Global extends GlobalSettings {
 
 		// read optional users file if available
 		if (new File(settingsPath + "users.csv").exists)
-			readUsersFromFile(settingsPath + "users.csv")
+			syncUsersFromFile(settingsPath + "users.csv")
 
 		// read optional tickets file if available
 		if (new File(settingsPath + "tickets.csv").exists)
-			readTicketsFromFile(settingsPath + "tickets.csv")
+			syncTicketsFromFile(settingsPath + "tickets.csv")
 	}
 	
 	override def onStop(app: App) {
@@ -39,7 +39,7 @@ object Global extends GlobalSettings {
 		Logger.info("Shutting down.")
 	}
 
-	def readUsersFromFile(fileName: String): Unit = inTransaction {
+	def syncUsersFromFile(fileName: String): Unit = inTransaction {
 		val ids = new HashSet[Long]
 		Db.users.where(u => 1 === 1).foreach(ids += _.id)
 		
@@ -62,7 +62,7 @@ object Global extends GlobalSettings {
 		ids.foreach(Db.users.delete(_))
 	}
 
-	def readTicketsFromFile(fileName: String): Unit = inTransaction {
+	def syncTicketsFromFile(fileName: String): Unit = inTransaction {
 		val ids = new HashSet[Long]
 		Db.tickets.where(t => 1 === 1).foreach(ids += _.id)
 		
@@ -92,6 +92,6 @@ object Global extends GlobalSettings {
 			lines.next
 
 		while (lines.hasNext)
-			f(lines.next.split(','))
+			f(lines.next.split(';'))
 	}
 }

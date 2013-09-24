@@ -1,0 +1,16 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory 
+        android:title="Kategorietitel"
+        android:key="pref_key_storage_settings">
+        <CheckBoxPreference
+            android:key="pref_key_auto_delete"
+            android:summary="LöschenSummary"
+            android:title="LöschenTitle"
+            android:defaultValue="false" />
+        <Preference 
+            android:key="pref_key_mms_delete_limit"
+            android:dependency="pref_key_auto_delete"
+            android:summary="LimitSummary"
+            android:title="LimitTitle" />
+    </PreferenceCategory>
+</PreferenceScreen>
