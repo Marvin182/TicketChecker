@@ -19,6 +19,7 @@ package object api {
 							code: String,
 							forename: String,
 							surname: String,
+							isStudent: Boolean,
 							table: Int,
 							checkedIn: Boolean,
 							checkedInBy: Option[String],
@@ -33,6 +34,7 @@ package object api {
 	case class TicketNotFound(id: Long)
 
 	case class EventStats(ticketsCheckedIn: Int, ticketsTotal: Int)
+	case class Projection(checkInsPerMin: Double, predictedChechInDoneTime: Option[Int])
 
 	implicit val debugFmt = Json.format[Debug]
 	implicit val apiErrorFmt = Json.format[ApiError]
@@ -48,5 +50,6 @@ package object api {
 	implicit val ticketNotFoundFmt = Json.format[TicketNotFound]
 
 	implicit val eventStatsFmt = Json.format[EventStats]
+	implicit val projectionFmt = Json.format[Projection]
 }
 
