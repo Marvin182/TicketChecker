@@ -5,7 +5,7 @@ logLevel := Level.Warn
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 // Play sbt plugin for Play projects
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0-M2")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
 
 // https://github.com/jamesward/play-auto-refresh
 // addSbtPlugin("com.jamesward" %% "play-auto-refresh" % "0.0.4")
