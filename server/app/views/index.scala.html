@@ -58,7 +58,7 @@
 			<td>@t.surname</td>
 			<td>@(if(t.isStudent) Messages("yes") else Messages("no"))</td>
 			<td>@t.table</td>
-			<td class="check-in-by">@t.checkedInBy.headOption.map(_ name).getOrElse("")</td>
+			<td class="check-in-by">@t.checkedInBy.headOption.map(_ username).getOrElse("")</td>
 			<td class="check-in-time">@t.checkInTime.map(_ + "").getOrElse("")</td>
 			<td class="actions">
 				<button class="btn btn-primary btn-xs action-check-in @(if(t.checkedIn) "hide" else "")">@Messages("tickets.checkIn")</button>
@@ -70,7 +70,7 @@
 	</table>
 
 <script type="text/javascript">
-	var ticketApiUrl = "@de.mritter.ticketchecker.server.routes.Application.api.webSocketURL()";
+	var ticketApiUrl = "@de.mritter.ticketchecker.server.routes.Application.api(user).webSocketURL()";
 </script>
 
 }("jquery/js/jquery.tablesorter.min.js", "js/date.js", "js/index.js")

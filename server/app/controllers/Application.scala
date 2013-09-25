@@ -30,12 +30,12 @@ object Application extends Controller {
 	def index = Action { implicit request =>
 		getUserOptFromSession(request.session) match {
 			case None => Ok(views.html.login())
-			case Some(user) => inTransaction { Ok(views.html.index(user.name)) }
+			case Some(user) => inTransaction { Ok(views.html.index(user.username)) }
 		}
 	}
 
-	def login(name: String, password: String) = Action { implicit request =>
-		getUserOpt(name, password) match {
+	def login(username: String, password: String) = Action { implicit request =>
+		getUserOpt(username, password) match {
 			case None => Ok("0")
 			case Some(user) => {
 				val session = new SessionDb(newSessionId, user.id)
@@ -51,8 +51,8 @@ object Application extends Controller {
 		Ok(views.html.login()).withNewSession
 	}
 
-	def api(name: String = "", password: String = "") = WebSocket.async[JsValue] { request => 
-		getUserOptFromSession(request.session).orElse(getUserOpt(name, password)) match {
+	def api(username: String, password: String = "") = WebSocket.async[JsValue] { request => 
+		getUserOptFromSession(request.session).orElse(getUserOpt(username, password)) match {
 			case None => future { error(-4, "Not authenticated. Please sign in again.") }
 			case Some(user) => {
 				try {
@@ -68,8 +68,8 @@ object Application extends Controller {
 		}
 	}
 
-	private def getUserOpt(name: String, password: String): Option[UserDb] = inTransaction {
-		Db.users.where(u => lower(u.name) === lower(name) and u.password === password).headOption
+	private def getUserOpt(username: String, password: String): Option[UserDb] = inTransaction {
+		Db.users.where(u => lower(u.username) === lower(username) and u.password === Global.sha1(password)).headOption
 	}
 
 	private def getUserOptFromSession(session: Session): Option[UserDb] = session.get("id") match {

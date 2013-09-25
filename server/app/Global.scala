@@ -45,9 +45,9 @@ object Global extends GlobalSettings {
 		
 		// insert or update users in db
 		forEachCSVEntry(fileName) { values =>
-			// values = [name, password, isAdman]
-			val user = new UserDb(0, values(0), values(1), values(2) == "1")
-			ids -= (Db.users.where(u => u.name === user.name).headOption match {
+			// values = [username, password, isAdman]
+			val user = new UserDb(0, values(0), sha1(values(1)), values(2) == "1")
+			ids -= (Db.users.where(u => u.username === user.username).headOption match {
 				case Some(u) => {
 					u.password = user.password
 					u.isAdmin = user.isAdmin
@@ -94,4 +94,6 @@ object Global extends GlobalSettings {
 		while (lines.hasNext)
 			f(lines.next.split(';'))
 	}
+			
+	def sha1(s: String) = java.security.MessageDigest.getInstance("SHA-1").digest(s.getBytes).map((b: Byte) => (if (b >= 0 & b < 16) "0" else "") + (b & 0xFF).toHexString).mkString
 }

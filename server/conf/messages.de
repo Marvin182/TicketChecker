@@ -4,7 +4,7 @@ yes=ja
 no=nein
 
 login.header=Anmeldung
-login.name=Name
+login.username=Benutzername
 login.password=Passwort
 login.loginFailedMsg=Fehler beim Anmelden. Bitte überprüfen Sie Name und Passwort.
 login.login=Anmelden

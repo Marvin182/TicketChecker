@@ -17,7 +17,7 @@ object Db extends Schema {
 }
    
 class UserDb(val id: Long,
-			val name: String,
+			val username: String,
 			var password: String,
 			var isAdmin: Boolean = false) extends KeyedEntity[Long] {
 	def this() = this(0, "", "", false)
@@ -26,7 +26,7 @@ class UserDb(val id: Long,
 	lazy val ticketsCheckedIn: OneToMany[TicketDb] = Db.userToCheckInTickets.left(this)
 
 	override def hashCode = id.toInt
-	override def toString = s"User($id, $name, $isAdmin)"
+	override def toString = s"User($id, $username, $isAdmin)"
 }
 
 class SessionDb(val id: String,

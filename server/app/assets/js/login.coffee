@@ -19,7 +19,7 @@ signIn = ->
 	$.ajax
 		url: 'login'
 		type: 'GET'
-		data: 'name=' + $('#name').val() + '&password=' + $('#password').val()
+		data: 'username=' + $('#username').val() + '&password=' + $('#password').val()
 		success: (response) ->
 			if response == '1'
 				# login successful, reload to display the interface

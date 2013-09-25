@@ -4,7 +4,7 @@
 
 create table users (
 	id int unsigned auto_increment,
-	name varchar_ignorecase(45) not null,
+	username varchar_ignorecase(45) not null,
 	password varchar(45) not null,
 	isAdmin boolean not null default 0,
 	primary key (id)

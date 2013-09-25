@@ -4,7 +4,7 @@ yes=yes
 no=no
 
 login.header=Please sign in
-login.name=Name
+login.username=Username
 login.password=Password
 login.loginFailedMsg=Could not log in, check your name and password.
 login.login=Sign in

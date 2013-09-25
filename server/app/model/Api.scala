@@ -130,7 +130,7 @@ class Api extends Actor {
 		connections.foreach(_.send(msg))
 	}
 
-	implicit def ticketDb2TicketDetails(t: TicketDb): TicketDetails = TicketDetails(t.id, t.order, t.code, t.forename, t.surname, t.isStudent, t.table, t.checkedIn, t.checkedInBy.headOption.map(_ name), t.checkInTime)
+	implicit def ticketDb2TicketDetails(t: TicketDb): TicketDetails = TicketDetails(t.id, t.order, t.code, t.forename, t.surname, t.isStudent, t.table, t.checkedIn, t.checkedInBy.headOption.map(_ username), t.checkInTime)
 }
 
 case class Connect(user: UserDb)
@@ -141,7 +141,7 @@ class Connection(val user: UserDb, private val channel: Channel[JsValue]) {
 	def send[T](msg: T)(implicit write: Writes[T]) {
 		val msgJson = Json.toJson(msg).asInstanceOf[JsObject]
 		channel.push(msgJson + typ(msg))
-		// Logger.info("api send to " + user.name + " " + (msgJson + typ(msg)))
+		// Logger.info("api send to " + user.username + " " + (msgJson + typ(msg)))
 	}
 
 	private def typ[T](msg: T) = ("typ", Json.toJson(msg.getClass.getSimpleName))
