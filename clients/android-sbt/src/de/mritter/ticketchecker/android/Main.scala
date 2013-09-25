@@ -1,6 +1,7 @@
 package de.mritter.ticketchecker.android
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.Subscriber
 
 import android.os.{Bundle, Handler}
 import android.app.Activity
@@ -28,10 +29,11 @@ object Main {
 	System.loadLibrary("iconv")
 }
 
-class Main extends Activity {
+class Main extends Activity with Subscriber[TicketApiEvent, TicketApi] {
 	Main  
   
 	val ticketApi = new TicketApi
+	ticketApi.subscribe(this)
 	lazy val preferences = getPreferences(Context.MODE_PRIVATE)
 
 	var cameraPreview: CameraPreview = null
@@ -56,15 +58,15 @@ class Main extends Activity {
 		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM)
 
 		hostAddress.setText(preferences.getString("host", "192.168.137.1"))
+		// username.setText(preferences.getString("username", ""))
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
 				val editor = preferences.edit
 				editor.putString("host", hostAddress.getText.toString)
 				editor.commit
-				ticketApi.connect(hostAddress.getText.toString)
+				ticketApi.connect(hostAddress.getText.toString, "Einlass1")
 			}
 		})
-		ticketApi.connect(hostAddress.getText.toString)
 
 		cameraPreview = new CameraPreview(this, onPreviewFrame)
 		previewFrame.addView(cameraPreview)
@@ -78,19 +80,26 @@ class Main extends Activity {
 		})
 	}
 
+	var apiConnectedMenuItem: Option[MenuItem] = None
 	override def onCreateOptionsMenu(menu: Menu) = {
 		getMenuInflater().inflate(R.menu.main, menu)
+		apiConnectedMenuItem = Some(menu.findItem(R.id.menu_api_connection))
+		apiConnectedMenuItem.map(_.setIcon(if (ticketApi.connected) R.drawable.rating_good else R.drawable.rating_bad))
 		super.onCreateOptionsMenu(menu)
 	}
 
 	override def onResume() {
 		super.onResume()
 		cameraPreview.resume
+		ticketApi.autoReconnect = true
+		ticketApi.connect(preferences.getString("host", "192.168.137.1"), "Einlass1")
 	}
 
 	override def onPause() {
 		super.onPause()
 		cameraPreview.pause
+		ticketApi.autoReconnect = false
+		ticketApi.disconnect()
 	}
 	
 	def onPreviewFrame(data: Array[Byte], camera: Camera) {
@@ -98,7 +107,7 @@ class Main extends Activity {
 		val barcode = new Image(size.width, size.height, "Y800")
 		barcode.setData(data)
 
-		if (scanner.scanImage(barcode) != 0) {				
+		if (scanner.scanImage(barcode) != 0 && ticketApi.connected) {				
 			val results = scanner.getResults.iterator.map(_.getData).toArray
 			log.v("scanned: " + results.mkString(" | "))
 			try {
@@ -114,13 +123,20 @@ class Main extends Activity {
 		}
 	}
 
-	ticketApi.onTicketStatusChange = ((ticket: Ticket, status: Int, details: Option[TicketDetails]) =>
-		runOnGUiThread(tickets.update(ticket, status, details))
-	)
+	override def onOptionsItemSelected(item: MenuItem) = item.getItemId match {
+		case _ => super.onOptionsItemSelected(item)
+	}
 
-	ticketApi.onEventStatsUpdate = (stats: EventStats) => runOnGUiThread {
-		checkinProgressBar.setMax(stats.ticketsTotal)
-		checkinProgressBar.setProgress(stats.ticketsCheckedIn)
+	def notify(api: TicketApi, event: TicketApiEvent) = runOnGUiThread {
+		event match {
+			case TicketApiConnected => apiConnectedMenuItem.map(_.setIcon(R.drawable.rating_good))
+			case TicketApiDisconnected => apiConnectedMenuItem.map(_.setIcon(R.drawable.rating_bad))
+			case TicketStatusChangeEvent(ticket, status, details) => tickets.update(ticket, status, details)
+			case EventStatsUpdateEvent(stats) => {
+				checkinProgressBar.setMax(stats.ticketsTotal)
+				checkinProgressBar.setProgress(stats.ticketsCheckedIn)
+			}
+		}
 	}
 
 	private def toggleTorch(view: View) {
@@ -135,35 +151,4 @@ class Main extends Activity {
 		}
 	}
 
-
-
-	private var menuItem: MenuItem = null
-	override def onOptionsItemSelected(item: MenuItem) = item.getItemId match {
-		case R.id.menu_load =>
-			menuItem = item
-			menuItem.setActionView(R.layout.progressbar)
-			menuItem.expandActionView
-			// val task = new TestTask
-			// task.execute("test")
-			true
-		case _ => super.onOptionsItemSelected(item)
-	}
-
-	private class TestTask extends AsyncTask[String, Unit, String] {
-
-		override def doInBackground(params: String*): String = {
-			// Simulate something long running
-			try {
-				Thread.sleep(2000)
-			} catch {
-				case e: Throwable => e.printStackTrace
-			}
-			null
-		}
-
-		override def onPostExecute(result: String) {
-			menuItem.collapseActionView
-			menuItem.setActionView(null)
-		}
-	}
 }

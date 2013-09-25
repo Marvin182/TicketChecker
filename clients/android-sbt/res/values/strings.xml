@@ -7,5 +7,7 @@
     <string name="torch">Taschenlampe</string>
     <string name="clear">Leeren</string>
     <string name="host_hint">IP Adresse des Ticketservers</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
 
 </resources>

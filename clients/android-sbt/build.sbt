@@ -14,6 +14,10 @@ proguardOptions in Android ++= Seq("-keep public class play.api.libs.json.** {*;
 
 proguardOptions in Android ++= Seq("-keep public class net.sourceforge.zbar.** {*;}")
 
+proguardOptions in Android ++= Seq("-keep public class scala.collection.mutable.Publisher.** {*;}")
+
+proguardOptions in Android ++= Seq("-keep public class org.java_websocket.client.WebSocketClient.** {*;}")
+
 proguardOptions in Android ++= Seq("-dontwarn **") // just bad, but against the proguard warnings the app runs fine
 
 run <<= run in Android

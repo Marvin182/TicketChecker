@@ -16,7 +16,7 @@ import de.mritter.ticketchecker.api.{Ticket, QrTicket, TicketDetails}
 
 class BigTicket(val order: Int,
 				val code: String,
-				var status: Int = 0,
+				var status: TicketStatus = TSUnknown,
 				var details: Option[TicketDetails] = None) extends Ticket
 
 class TicketListAdapter(val context: Context) extends BaseAdapter {
@@ -52,7 +52,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 
 	def contains(t: Ticket) = tickets.exists(x => x.order == t.order && x.code == t.code)
 
-	def update(t: Ticket, status: Int, details: Option[TicketDetails]) {
+	def update(t: Ticket, status: TicketStatus, details: Option[TicketDetails]) {
 		if (contains(t)) {
 			log.v("TicketListAdapter.update() " + t)
 			val ticket = bigTicket(t)
@@ -80,19 +80,19 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		val id = "%04d".format(t.order) + t.code
 
 		val (text, backgroundColor) = t.status match {
-			case 0 => (s"$id: Ckecking...", colorDefault)
-			case 3 => (s"$id: Invalid!", colorDanger)
-			case 1 => t.details.map(d => (s"${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
+			case TSUnknown => (s"$id: Ckecking...", colorDefault)
+			case TSValid => t.details.map(d => (s"${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
 				Log.w(TAG, "No ticket details found for CheckInSuccess.")
 				(s"$id: Error!", colorDefault)
 			}
-			case 2 => t.details.map { d =>
+			case TSUsed => t.details.map { d =>
 					val time = dateFormat.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
 					(s"${d.forename} ${d.surname} Checked already in at $time", colorWarning)
 				} getOrElse {
 					Log.w(TAG, "No ticket details found for CheckInFailed.")
 					(s"$id: Error!", colorDefault)
 				}
+			case TSInvalid => (s"$id: Invalid!", colorDanger)
 		}
 		textView.setText(text)
 		textView.setBackgroundColor(backgroundColor)
