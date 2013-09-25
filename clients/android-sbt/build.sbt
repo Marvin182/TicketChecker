@@ -10,6 +10,10 @@ scalacOptions in Compile ++= Seq("-deprecation", "-feature")
  
 proguardOptions in Android ++= Seq("-dontobfuscate"," -dontoptimize")
 
+proguardOptions in Android ++= Seq("-keep public class de.mritter.android.common.log.** {*;}")
+
+proguardOptions in Android ++= Seq("-keep public class de.mritter.ticketchecker.android.** {*;}")
+
 proguardOptions in Android ++= Seq("-keep public class play.api.libs.json.** {*;}")
 
 proguardOptions in Android ++= Seq("-keep public class net.sourceforge.zbar.** {*;}")
