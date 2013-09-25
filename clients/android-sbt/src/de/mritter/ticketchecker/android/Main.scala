@@ -12,11 +12,6 @@ import android.hardware._
 import android.hardware.Camera._
 import android.content.pm.ActivityInfo
 
-
-import android.os.AsyncTask
-
-
-
 import net.sourceforge.zbar._
 
 import android.support.v7.app.ActionBar
@@ -64,8 +59,15 @@ class Main extends Activity with Subscriber[TicketApiEvent, TicketApi] {
 				val editor = preferences.edit
 				editor.putString("host", hostAddress.getText.toString)
 				editor.commit
-				ticketApi.connect(hostAddress.getText.toString, "Einlass1")
+				ticketApi.connect(hostAddress.getText.toString, "Einlass2")
 			}
+		})
+
+		// toggle torch listener
+		find[CheckBox](R.id.toggle_torch).setOnClickListener(new View.OnClickListener() {
+			def onClick(v: View) {
+				cameraPreview.setTorch(v.asInstanceOf[CheckBox].isChecked)
+			}	
 		})
 
 		cameraPreview = new CameraPreview(this, onPreviewFrame)
@@ -92,7 +94,7 @@ class Main extends Activity with Subscriber[TicketApiEvent, TicketApi] {
 		super.onResume()
 		cameraPreview.resume
 		ticketApi.autoReconnect = true
-		ticketApi.connect(preferences.getString("host", "192.168.137.1"), "Einlass1")
+		ticketApi.connect(preferences.getString("host", "192.168.137.1"), "Einlass2")
 	}
 
 	override def onPause() {
@@ -137,10 +139,6 @@ class Main extends Activity with Subscriber[TicketApiEvent, TicketApi] {
 				checkinProgressBar.setProgress(stats.ticketsCheckedIn)
 			}
 		}
-	}
-
-	private def toggleTorch(view: View) {
-		cameraPreview.setTorch(view.asInstanceOf[CheckBox].isChecked)
 	}
 
 	private def runOnGUiThread(f: => Unit) {
