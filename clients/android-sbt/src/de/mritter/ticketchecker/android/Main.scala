@@ -10,6 +10,16 @@ import android.hardware._
 import android.hardware.Camera._
 import android.content.Context
 
+
+
+
+import android.hardware.Camera
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.graphics.PixelFormat
+
+
+
 import net.sourceforge.zbar._
 
 import com.actionbarsherlock.app.{SherlockActivity, ActionBar}
@@ -23,14 +33,14 @@ object Main {
 	System.loadLibrary("iconv")
 }
 
-class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] {
+class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] with SurfaceHolder.Callback {
 	Main  
   
 	val ticketApi = new TicketApi
 	ticketApi.subscribe(this)
 	lazy val preferences = getPreferences(Context.MODE_PRIVATE)
 
-	var cameraPreview: CameraPreview = null
+	// var cameraPreview: CameraPreview = null
 	var tickets: TicketListAdapter = null
 	val scanner = new ImageScanner
 
@@ -38,7 +48,7 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] {
 	def find[T](id: Int) = findViewById(id).asInstanceOf[T]
 	lazy val hostAddress = find[EditText](R.id.host)
 	lazy val connectButton = find[Button](R.id.connect)
-	lazy val previewFrame = find[FrameLayout](R.id.preview)
+	// lazy val previewFrame = find[FrameLayout](R.id.preview)
 	lazy val ticketList = find[ListView](R.id.ticket_list)
 	lazy val clearButton = find[Button](R.id.clear)
 	lazy val checkinProgressBar = find[ProgressBar](R.id.checkin_progress)
@@ -56,23 +66,22 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] {
 		// username.setText(preferences.getString("username", ""))
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
-				// val editor = preferences.edit
-				// editor.putString("host", hostAddress.getText.toString)
-				// editor.commit
-				// ticketApi.connect(hostAddress.getText.toString, "Einlass1")
-				cameraPreview.startPreview
+				val editor = preferences.edit
+				editor.putString("host", hostAddress.getText.toString)
+				editor.commit
+				ticketApi.connect(hostAddress.getText.toString, "Einlass1")
 			}
 		})
 
 		// toggle torch listener
 		find[CheckBox](R.id.toggle_torch).setOnClickListener(new View.OnClickListener() {
 			def onClick(v: View) {
-				cameraPreview.setTorch(v.asInstanceOf[CheckBox].isChecked)
+				// cameraPreview.setTorch(v.asInstanceOf[CheckBox].isChecked)
 			}	
 		})
 
-		cameraPreview = new CameraPreview(this, onPreviewFrame)
-		previewFrame.addView(cameraPreview)
+		// cameraPreview = new CameraPreview(this, onPreviewFrame)
+		// previewFrame.addView(cameraPreview)
 
 		tickets = new TicketListAdapter(this)
 		ticketList.setAdapter(tickets)
@@ -81,17 +90,134 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] {
 				tickets.clear
 			}
 		})
+
+		onCreate2
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	var camera: Camera = null
+	var previewing = false
+	lazy val surfaceView = find[SurfaceView](R.id.surfaceview) 
+	lazy val surfaceHolder = surfaceView.getHolder
+
+	def onCreate2 {
+		val buttonStartCameraPreview = find[Button](R.id.startcamerapreview)
+		val buttonStopCameraPreview = find[Button](R.id.stopcamerapreview)
+
+		getWindow.setFormat(PixelFormat.UNKNOWN)
+		surfaceHolder.addCallback(this)
+		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
+
+		buttonStartCameraPreview.setOnClickListener(new View.OnClickListener {
+			override def onClick(v: View) {
+				if (!previewing) {
+					camera = Camera.open
+					if (camera != null) {
+						tryOrLog {
+							camera.setDisplayOrientation(90)
+							camera.setPreviewDisplay(surfaceHolder)
+							camera.setPreviewCallback(previewCallback)
+							camera.startPreview
+							previewing = true
+						}
+					}
+				}
+			}
+		})
+
+
+		buttonStopCameraPreview.setOnClickListener(new View.OnClickListener(){
+			override def onClick(v: View) {
+				if (camera != null && previewing) {
+					camera.stopPreview
+					camera.setPreviewCallback(null)
+					camera.release
+					camera = null
+					previewing = false
+				}
+			}
+		})
+	}
+
+	override def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+		// TODO Auto-generated method stub
+	}
+
+	override def surfaceCreated(holder: SurfaceHolder) {
+		// TODO Auto-generated method stub
+	}
+
+	override def surfaceDestroyed(holder: SurfaceHolder) {
+		// TODO Auto-generated method stub
+	}
+
+
+
+
+
+	val previewCallback = new Camera.PreviewCallback {
+		def onPreviewFrame(data: Array[Byte], camera: Camera) = {
+			val size = camera.getParameters.getPreviewSize
+			val barcode = new Image(size.width, size.height, "Y800")
+			barcode.setData(data)
+
+			if (scanner.scanImage(barcode) != 0 && ticketApi.connected) {				
+				val results = scanner.getResults.iterator.map(_.getData).toArray
+				log.v("scanned: " + results.mkString(" | "))
+				tryOrLog {
+					QrCodes.tickets(results).foreach{ t =>
+						if (tickets.add(t)) {
+							log.i(s"checking $t")
+							ticketApi.send(CheckInTicket(t.order, t.code))
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	override protected def onResume {
 		super.onResume
-		cameraPreview.resume
+		// cameraPreview.resume
 		ticketApi.autoReconnect = true
 		ticketApi.connect(preferences.getString("host", "192.168.137.1"), "Einlass1")
 	}
 
 	override protected def onPause {
 		super.onPause
-		cameraPreview.pause
+		// cameraPreview.pause
 		ticketApi.autoReconnect = false
 		ticketApi.disconnect()
 	}
