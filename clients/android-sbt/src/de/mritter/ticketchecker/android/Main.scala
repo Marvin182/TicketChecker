@@ -109,6 +109,7 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 
 	var camera: Camera = null
 	var previewing = false
+	var surfaceCreated = false
 	lazy val surfaceView = find[SurfaceView](R.id.surfaceview) 
 	lazy val surfaceHolder = surfaceView.getHolder
 
@@ -122,44 +123,69 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 
 		buttonStartCameraPreview.setOnClickListener(new View.OnClickListener {
 			override def onClick(v: View) {
-				if (!previewing) {
-					camera = Camera.open
-					if (camera != null) {
-						tryOrLog {
-							camera.setDisplayOrientation(90)
-							camera.setPreviewDisplay(surfaceHolder)
-							camera.setPreviewCallback(previewCallback)
-							camera.startPreview
-							previewing = true
-						}
-					}
-				}
+				startPreview
 			}
 		})
 
 
 		buttonStopCameraPreview.setOnClickListener(new View.OnClickListener(){
 			override def onClick(v: View) {
-				if (camera != null && previewing) {
-					camera.stopPreview
-					camera.setPreviewCallback(null)
-					camera.release
-					camera = null
-					previewing = false
-				}
+				stopPreview
 			}
 		})
 	}
 
+	def startPreview {
+		if (!previewing && surfaceCreated) {
+			camera = Camera.open
+			if (camera != null) {
+				try {
+					withCameraParameters { p =>
+						if (android.os.Build.VERSION.SDK_INT >= 14) {
+							p.setFocusMode("continuous-picture")
+						} else {
+							// camera.autoFocus(autoFocusCB)
+						}
+					}
+					camera.setDisplayOrientation(90)
+					camera.setPreviewDisplay(surfaceHolder)
+					camera.setPreviewCallback(previewCallback)
+					camera.startPreview
+					previewing = true
+				} catch {
+					case e: Throwable => log.w("Could not start camera preview: " + e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
+				}
+			}
+		}
+	}
+
+	def stopPreview {
+		if (camera != null && previewing) {
+			camera.stopPreview
+			camera.setPreviewCallback(null)
+			camera.release
+			camera = null
+			previewing = false
+		}
+	}
+
 	override def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+		log.w("surfaceChanged()")
 		// TODO Auto-generated method stub
+		stopPreview
+
+		startPreview
 	}
 
 	override def surfaceCreated(holder: SurfaceHolder) {
+		log.w("surfaceCreated()")
+		surfaceCreated = true
 		// TODO Auto-generated method stub
 	}
 
 	override def surfaceDestroyed(holder: SurfaceHolder) {
+		log.w("surfaceDestroyed()")
+		surfaceCreated = false
 		// TODO Auto-generated method stub
 	}
 
@@ -193,7 +219,17 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 
 
 
-
+	private def withCameraParameters(f: (Camera#Parameters) => Unit) {
+		if (camera != null) {
+			try {
+				var p = camera.getParameters
+				f(p)
+				camera.setParameters(p)
+			} catch {
+				case e: Throwable => log.w("Error while changing camera parameters: " + e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\t\n"))
+			}
+		}
+	}
 
 
 
@@ -209,15 +245,17 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 
 
 	override protected def onResume {
+		log.w("Main.onResume()")
 		super.onResume
-		// cameraPreview.resume
+		startPreview
 		ticketApi.autoReconnect = true
 		ticketApi.connect(preferences.getString("host", "192.168.137.1"), "Einlass1")
 	}
 
 	override protected def onPause {
+		log.w("Main.onPause()")
 		super.onPause
-		// cameraPreview.pause
+		stopPreview
 		ticketApi.autoReconnect = false
 		ticketApi.disconnect()
 	}

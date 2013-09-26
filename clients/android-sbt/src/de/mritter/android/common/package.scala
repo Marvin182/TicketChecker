@@ -23,7 +23,7 @@ package object common {
 		try {
 			f
 		} catch {
-			case e: Throwable => log.w(e.toString + "\n" + e.getStackTrace.take(5).mkString("\n"))
+			case e: Throwable => log.w(e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
 		}
 	}
 
