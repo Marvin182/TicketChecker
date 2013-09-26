@@ -26,12 +26,25 @@ object Global extends GlobalSettings {
 		)
 
 		// read optional users file if available
-		if (new File(settingsPath + "users.csv").exists)
+		if (new File(settingsPath + "users.csv").exists) {
+			Logger.info("Syncing users from file.")
 			syncUsersFromFile(settingsPath + "users.csv")
+		}
 
 		// read optional tickets file if available
-		if (new File(settingsPath + "tickets.csv").exists)
+		if (new File(settingsPath + "tickets.csv").exists) {
+			Logger.info("Syncing tickets from file.")
 			syncTicketsFromFile(settingsPath + "tickets.csv")
+		}
+
+
+		if (new File(settingsPath + "test.txt").exists) {
+			inTransaction {
+				Logger.info("Setting test data.")
+				Db.tickets.update(t => where(1 === 1) set(t.checkedIn := false, t.checkedInById := None, t.checkInTime := None))
+				Db.tickets.update(t => where(t.order gte 100) set(t.checkedIn := true, t.checkedInById := Some(1L), t.checkInTime := Some(System.currentTimeMillis / 1000 - 600)))
+			}
+		}
 	}
 	
 	override def onStop(app: App) {

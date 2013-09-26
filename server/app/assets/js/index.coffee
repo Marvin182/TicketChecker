@@ -102,7 +102,7 @@ class Alert
 	constructor: (@root) ->
 		@c = 0
 	inc: -> @c++
-	dec: ($e) -> if (--@c == 0) then @autoRemoveAlerts().remove() else if (@autoRemoveAlerts().length > 5) then $e.remove()
+	dec: ($e) -> if (--@c == 0) then @autoRemoveAlerts().remove() else if (@autoRemoveAlerts().length > 10) then $e.remove()
 	autoRemoveAlerts: -> $('.alert.auto-remove', @root)
 	newAlert: (text, type = 'info', time = 10) ->
 		pos = text.indexOf('!')

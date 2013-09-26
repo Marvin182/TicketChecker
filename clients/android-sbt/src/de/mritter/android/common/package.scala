@@ -8,7 +8,7 @@ package object common {
 
 	/*
 	 * Log wrapper using always the same tag
-	 * adb logcat -c && adb logcat de.mritter:V *:S
+	 * adb logcat -c && adb logcat de.mritter:D AndroidRuntime:E *:S
 	 */
 	object log {
 		private val TAG = "de.mritter"

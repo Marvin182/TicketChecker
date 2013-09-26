@@ -48,7 +48,7 @@ class TicketApi extends Publisher[TicketApiEvent] with Subscriber[WebSocketEvent
 		if (ws != null) {
 			ws.removeSubscriptions
 			if (closeSocket) {
-				log.d("TicketApi: disconnecting (closing socket) ...")
+				log.d("TicketApi: disconnecting (closing socket)")
 				ws.close
 			}
 		}
@@ -98,11 +98,13 @@ class TicketApi extends Publisher[TicketApiEvent] with Subscriber[WebSocketEvent
 			case WebSocketCloseEvent(_, _, _) => {
 				disconnect(false)
 				log.d(s"TicketApi: disconnected")
-				if (autoReconnect)
+				if (autoReconnect) {
+					log.d(s"TicketApi: auto reconnect in 5s")
 					scheduleTask(reconnect, 5000)
+				}
 			}
 			case WebSocketMessageEvent(msg) => receive(msg)
-			case _ => // ignore everything else (e.g. WebSocketErrorEvent)
+			case WebSocketErrorEvent(e) => log.d("TicketApi WebSocketError: " + e.toString)
 		}
 	}
 }
