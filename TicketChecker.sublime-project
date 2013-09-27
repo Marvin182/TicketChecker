@@ -8,7 +8,7 @@
 		},
 		{
 			"name": "App",
-			"path": "clients/android-sbt",
+			"path": "clients/android",
 			"folder_exclude_patterns": ["bin", "project/project", "project/target", "target"]
 		},
 		{
