@@ -17,6 +17,7 @@ class TicketApi extends Publisher[TicketApiEvent] with Subscriber[WebSocketEvent
 	private var ws: WebSocket = null
 	@volatile var connected = false
 	var autoReconnect = true
+	protected val autoReconnectDelay = 5000 // ms
 
 	def reconnect {
 		if (connected)
@@ -39,7 +40,7 @@ class TicketApi extends Publisher[TicketApiEvent] with Subscriber[WebSocketEvent
 			ws.subscribe(this)
 			ws.connect
 		} catch {
-			case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
+			case e: Throwable => log.e("Could connect to ticket server: " + e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
 		}
 	}
 
@@ -48,7 +49,7 @@ class TicketApi extends Publisher[TicketApiEvent] with Subscriber[WebSocketEvent
 		if (ws != null) {
 			ws.removeSubscriptions
 			if (closeSocket) {
-				log.d("TicketApi: disconnecting (closing socket)")
+				log.d("TicketApi: disconnecting")
 				ws.close
 			}
 		}
@@ -99,8 +100,8 @@ class TicketApi extends Publisher[TicketApiEvent] with Subscriber[WebSocketEvent
 				disconnect(false)
 				log.d(s"TicketApi: disconnected")
 				if (autoReconnect) {
-					log.d(s"TicketApi: auto reconnect in 5s")
-					scheduleTask(reconnect, 5000)
+					log.d(s"TicketApi: auto reconnect in " + autoReconnect + " ms")
+					scheduleTask(reconnect, autoReconnectDelay)
 				}
 			}
 			case WebSocketMessageEvent(msg) => receive(msg)

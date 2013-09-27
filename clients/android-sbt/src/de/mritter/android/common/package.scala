@@ -34,6 +34,6 @@ package object common {
 	def scheduleTask(f: => Unit, delay: Int) {
 		timer.schedule(new TimerTask {
 			def run = f
-			}, delay)
+		}, delay)
 	}
 }

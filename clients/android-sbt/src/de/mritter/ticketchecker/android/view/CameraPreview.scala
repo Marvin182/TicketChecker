@@ -1,158 +1,95 @@
 package de.mritter.ticketchecker.android
 
-import java.io.IOException
-
-import android.os.Bundle
-import android.os.Handler
-
-import android.view._
-import android.content.Context
-
+// import android.os.{Bundle, Handler}
+import android.view.{SurfaceHolder, SurfaceView}
 import android.hardware.Camera
 import android.hardware.Camera._
 
 import de.mritter.android.common._
 
-class CameraPreview(context: Context, protected val previewFrameCallback: (Array[Byte], Camera) => Unit) extends SurfaceView(context) with SurfaceHolder.Callback {
+case class PreviewFrame(data: Array[Byte], camera: Camera);
+
+class CameraPreview(val surfaceView: SurfaceView, val previewCallback: Camera.PreviewCallback) extends SurfaceHolder.Callback {
+	
+	protected val surfaceHolder = surfaceView.getHolder
+	surfaceHolder.addCallback(this)
+	surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS) 
 
 	protected var camera: Camera = null
-	protected var previewIsRunning = false
-	protected var previewCallback = new PreviewCallback {
-		def onPreviewFrame(data: Array[Byte], camera: Camera) = previewFrameCallback(data, camera)
-	}
-
-	getHolder.addCallback(this) // will trigger surfaceCreated, surfaceChanged, surfaceDestroyed
-
-	var wasCreated = false
+	protected var previewing = false
+	protected var surfaceCreated = false
 
 	def resume {
-		log.d("CameraPreview.resume()")
-		if (camera == null) {
-			// ToDo catch exceptions
-			camera = Camera.open
-			log.w("camera opened")
-			withCameraParameters { p =>
-				if (android.os.Build.VERSION.SDK_INT >= 14) {
-					p.setFocusMode("continuous-picture")
-				} else {
-					// camera.autoFocus(autoFocusCB)
-				}
-			}
-
-			camera.setDisplayOrientation(90)
-
-			startPreview
-		}
+		startPreview
 	}
 
 	def pause {
-		log.d("CameraPreview.pause()")
-		if (camera != null) {
-			stopPreview
+		stopPreview
+	}
+
+	def setTorch(on: Boolean) {
+		withCameraParameters{ p =>
+			p.setFlashMode(if (on) "torch" else "off")
+		}
+	}
+
+	override def surfaceCreated(holder: SurfaceHolder) {
+		surfaceCreated = true
+		// startPreview is called in surfaceChanged(), which is called after surfaceCreated()
+	}
+
+	override def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+		stopPreview
+
+		startPreview
+	}
+
+	override def surfaceDestroyed(holder: SurfaceHolder) {
+		surfaceCreated = false
+		stopPreview
+	}
+
+	protected def startPreview {
+		if (!previewing && surfaceCreated) {
+			camera = Camera.open
+			if (camera != null) {
+				try {
+					withCameraParameters { p =>
+						if (android.os.Build.VERSION.SDK_INT >= 14) {
+							p.setFocusMode("continuous-picture")
+						} else {
+							p.setFocusMode("auto")
+						}
+					}
+					camera.setDisplayOrientation(90)
+					camera.setPreviewDisplay(surfaceHolder)
+					camera.setPreviewCallback(previewCallback)
+					camera.startPreview
+					previewing = true
+					if (android.os.Build.VERSION.SDK_INT < 14) {
+						doContinuousAutoFocus // executing is only valid after startPreview and before stopPreview
+					}
+				} catch {
+					case e: Throwable => log.w("Could not start camera preview: " + e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
+				}
+			}
+		}
+	}
+
+	protected def stopPreview {
+		if (camera != null && previewing) {
+			previewing = false
+			if (android.os.Build.VERSION.SDK_INT < 14) {
+				camera.cancelAutoFocus // needed to stop simulated continuous auto focus
+			}
+			camera.stopPreview
+			camera.setPreviewCallback(null)
 			camera.release
 			camera = null
 		}
 	}
 
-	var mHolder: SurfaceHolder = null
-
-	def surfaceCreated(holder: SurfaceHolder): Unit = {
-		log.d("CameraPreview.surfaceCreated()")
-		
-		wasCreated = true
-		mHolder = holder
-
-		// works for galaxy
-		// holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
-		// camera.setPreviewDisplay(holder)
-
-
-
-		// tryOrLog {
-		// 	if (holder == null)
-		// 		log.w("surfaceCreated holder is fucking null")
-		// 	camera.setPreviewDisplay(holder)
-		// }
-
-		// val p = camera.getParameters();
-
-		// p.setPictureSize(IMAGE_WIDTH, IMAGE_HEIGHT);
-
-		// camera.getParameters().setRotation(90)
-
-		// Camera.Size s = p.getSupportedPreviewSizes().get(0)
-		// p.setPreviewSize(s.width, s.height)
-
-		// p.setPictureFormat(PixelFormat.JPEG)
-		// p.set("flash-mode", "auto")
-
-		// camera.setParameters(p)
-	}
-
-	def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-		log.d("CameraPreview.surfaceChanged()")
-
-		mHolder = holder
-
-		stopPreview
-
-
-		// do stuff
-		// tryOrLog {
-		// 	if (getHolder == null)
-		// 		log.w("surfaceChanged holder is fucking null")
-		// 	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
-		// 	camera.setPreviewDisplay(holder)
-		// }
-
-		startPreview
-	}
-	
-	def surfaceDestroyed(holder: SurfaceHolder) {
-		log.d("CameraPreview.surfaceDestroyed()")
-		stopPreview
-	}
-
-	def setTorch(on: Boolean) {
-		var params = camera.getParameters
-		if (on)
-			params.setFlashMode("torch")
-		else
-			params.setFlashMode("off")
-		camera.setParameters(params)
-	}
-
-	def startPreview {
-		log.d("CameraPreview.startPreview()")
-		if (previewIsRunning)
-			stopPreview
-		if (camera != null && wasCreated) {
-
-			log.w("mHolder=" + mHolder.toString)
-			log.w("getHolder=" + getHolder.toString)
-			tryOrLog {
-				// if (android.os.Build.VERSION.SDK_INT < 11)
-				mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
-				camera.setPreviewDisplay(mHolder)
-			}
-
-
-			camera.setPreviewCallback(previewCallback)
-			camera.startPreview
-			previewIsRunning = true
-		}
-	}
-
-	private def stopPreview {
-		log.d("CameraPreview.stopPreview()")
-		if (camera != null) {
-			camera.stopPreview
-			camera.setPreviewCallback(null)
-			previewIsRunning = false
-		}
-	}
-
-	private def withCameraParameters(f: (Camera#Parameters) => Unit) {
+	protected def withCameraParameters(f: (Camera#Parameters) => Unit) {
 		if (camera != null) {
 			try {
 				var p = camera.getParameters
@@ -163,21 +100,19 @@ class CameraPreview(context: Context, protected val previewFrameCallback: (Array
 			}
 		}
 	}
-	
-	private val autoFocusHandler = new Handler
-	private val doAutoFocus = new Runnable {
-		def run {
-			if (camera != null)	camera.autoFocus(autoFocusCB)
+
+	// just simulate a continuous auto focus as with "continuous-picture" focus mode (available for API level >= 14)
+	protected def doContinuousAutoFocus {
+		if (previewing) {
+			camera.autoFocus(autoFocusCallback)
 		}
 	}
-	private val autoFocusCB: AutoFocusCallback = new AutoFocusCallback {
+
+	protected val autoFocusCallback = new AutoFocusCallback {
 		def onAutoFocus(success: Boolean, camera: Camera) {
-			autoFocusHandler.postDelayed(doAutoFocus, 250)
+			scheduleTask(doContinuousAutoFocus, 250)
 		}
 	}
 }
 
 
-
-
-    
