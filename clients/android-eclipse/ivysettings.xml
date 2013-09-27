@@ -1,8 +1,0 @@
-<ivysettings>
-    <resolvers>
-        <packager name="Mandubian repository snapshots" buildRoot="${user.home}/.ivy2/packager/build" resourceCache="${user.home}/.ivy2/packager/cache">
-            <ivy pattern="https://github.com/mandubian/mandubian-mvn/raw/master/snapshots/[organisation]/[module]/[revision]/ivy.xml"/>
-            <artifact pattern="https://github.com/mandubian/mandubian-mvn/raw/master/snapshots/[organisation]/[module]/[revision]/packager.xml"/>
-        </packager>
-    </resolvers>
-</ivysettings>
