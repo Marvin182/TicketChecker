@@ -1,0 +1,1 @@
+adb logcat -c && adb logcat de.mritter:D AndroidRuntime:E *:S
