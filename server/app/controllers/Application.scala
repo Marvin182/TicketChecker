@@ -51,7 +51,7 @@ object Application extends Controller {
 		Ok(views.html.login()).withNewSession
 	}
 
-	def api(username: String, password: String = "") = WebSocket.async[JsValue] { request => 
+	def api(username: String = "", password: String = "") = WebSocket.async[JsValue] { request =>
 		getUserOptFromSession(request.session).orElse(getUserOpt(username, password)) match {
 			case None => future { error(-4, "Not authenticated. Please sign in again.") }
 			case Some(user) => {

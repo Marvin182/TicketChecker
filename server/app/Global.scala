@@ -14,8 +14,11 @@ import org.squeryl.PrimitiveTypeMode._
 object Global extends GlobalSettings {
 
 	val settingsPath = System.getProperty("user.home") + "/.ticketchecker/"
+	var testMode = false
 
 	override def onStart(app: App) {
+		testMode = app.configuration.getBoolean("testMode") getOrElse false
+
 		val settingsDir = new File(settingsPath)
 		if (!settingsDir.exists) {
 			settingsDir.mkdir.toString
@@ -38,10 +41,10 @@ object Global extends GlobalSettings {
 		}
 
 
-		if (new File(settingsPath + "test.txt").exists) {
+		if (testMode) {
 			inTransaction {
 				Logger.info("Setting test data.")
-				Db.tickets.update(t => where(1 === 1) set(t.checkedIn := false, t.checkedInById := None, t.checkInTime := None))
+				Db.tickets.update(t => setAll(t.checkedIn := false, t.checkedInById := None, t.checkInTime := None))
 				Db.tickets.update(t => where(t.order gte 100) set(t.checkedIn := true, t.checkedInById := Some(1L), t.checkInTime := Some(System.currentTimeMillis / 1000 - 600)))
 			}
 		}
@@ -79,10 +82,14 @@ object Global extends GlobalSettings {
 		val ids = new HashSet[Long]
 		Db.tickets.where(t => 1 === 1).foreach(ids += _.id)
 		
+		var inserts = 0
+
 		// insert or update tickets in db
 		forEachCSVEntry(fileName) { values =>
 			// values = [order, code, forename, surname, student, table]
-			val ticket = new TicketDb(0, values(0).toInt, values(1), values(2), values(3), values(4) == "1", values(5).toInt)
+			val table = if (testMode) 1 + inserts / 10 else values(5).toInt
+			inserts += 1
+			val ticket = new TicketDb(0, values(0).toInt, values(1), values(2), values(3), values(4) == "1", table)
 			ids -= (Db.tickets.where(t => t.order === ticket.order and t.code === ticket.code).headOption match {
 				case Some(t) => {
 					t.table = ticket.table

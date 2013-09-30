@@ -75,7 +75,7 @@ class Api
 			id: parseInt(id)
 
 	reconnect: ($e) ->
-		retryEvery = 15 # seconds
+		retryEvery = 10 # seconds
 		at = @
 		$.ajax window.location.href,
 			type: 'GET'

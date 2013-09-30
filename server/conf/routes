@@ -1,6 +1,6 @@
 # Home page
 GET		/                           de.mritter.ticketchecker.server.Application.index
-GET		/api                        de.mritter.ticketchecker.server.Application.api(username: String, password: String = "")
+GET		/api/v1                     de.mritter.ticketchecker.server.Application.api(username: String ?= "", password: String ?= "")
 GET		/login                      de.mritter.ticketchecker.server.Application.login(username: String, password: String)
 GET		/logout                     de.mritter.ticketchecker.server.Application.logout
 
