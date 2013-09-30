@@ -2,12 +2,12 @@
 <resources>
 
     <string name="app_name">TicketChecker</string>
-    <string name="action_settings">Einstellungen</string>
-    <string name="connect">Verbinden</string>
-    <string name="torch">Taschenlampe</string>
-    <string name="clear">Leeren</string>
-    <string name="host_hint">IP Adresse des Ticketservers</string>
+
+    <!-- Connection Dialog -->
+    <string name="server_address">Server-Adresse</string>
     <string name="username">Benutzername</string>
     <string name="password">Passwort</string>
+    <string name="connect">Verbinden</string>
+    <string name="cancel">Abbrechen</string>
 
 </resources>

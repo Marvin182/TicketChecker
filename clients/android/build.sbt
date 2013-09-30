@@ -16,13 +16,11 @@ proguardOptions in Android ++= Seq("-keep public class de.mritter.ticketchecker.
 
 proguardOptions in Android ++= Seq("-keep public class android.support.v4.app.FragmentActivity.* {*;}") // referenced by com.actionbarsherlock.internal.app.ActionBarImpl.selectTab
 
-
 proguardOptions in Android ++= Seq("-keep public class com.actionbarsherlock.** {*;}")
 
-proguardOptions in Android ++= Seq("-keep public class android.app.** {*;}")
+proguardOptions in Android ++= Seq("-keep public class android.app.** {*;}") // necessary?
 
-
-proguardOptions in Android ++= Seq("-keep public class play.api.libs.json.** {*;}")
+proguardOptions in Android ++= Seq("-keep public class play.api.libs.json.** {*;}") // necessary?
 
 proguardOptions in Android ++= Seq("-keep public class net.sourceforge.zbar.** {*;}")
 

@@ -14,7 +14,16 @@ import android.content.Context
 import de.mritter.android.common._
 import de.mritter.ticketchecker.api.{Ticket, QrTicket, TicketDetails}
 
-class BigTicket(val order: Int,
+object BigTicket {
+	private var lastId = 0
+	def apply(order: Int, code: String) = {
+		lastId += 1
+		new BigTicket(lastId, order, code)
+	}
+}
+
+class BigTicket(val id: Long,
+				val order: Int,
 				val code: String,
 				var status: TicketStatus = TSUnknown,
 				var details: Option[TicketDetails] = None) extends Ticket
@@ -36,11 +45,11 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 	val colorDanger  = 0xffb30000 // red
 	val dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-	private def bigTicket(t: Ticket): BigTicket = tickets.find(x => x.order == t.order && x.code == t.code).getOrElse(new BigTicket(t.order, t.code))
+	private def bigTicket(t: Ticket): BigTicket = tickets.find(x => x.order == t.order && x.code == t.code).getOrElse(BigTicket(t.order, t.code))
 
 	def add(t: Ticket): Boolean = if (contains(t)) false else {
 		log.v("TicketListAdapter.add() " + t)
-		tickets += bigTicket(t)
+		tickets prepend bigTicket(t)
 		notifyDataSetChanged
 		true
 	}
@@ -65,13 +74,13 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 	// list adapter stuff
 	def getCount = tickets.length
 	def getItem(position: Int): Object = tickets(position)
-	def getItemId(position: Int): Long = position
+	def getItemId(position: Int): Long = tickets(position).id
 
-	val mInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE).asInstanceOf[LayoutInflater]
+	val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE).asInstanceOf[LayoutInflater]
 	def getView(position: Int, convertView: View, parent: ViewGroup): View = {
 		var v: View = convertView
 		if (v == null) { 
-			v = mInflater.inflate(R.layout.ticket_list_item, parent, false)
+			v = inflater.inflate(R.layout.ticket_list_item, parent, false)
 		} 
 
 		val textView = v.findViewById(R.id.text).asInstanceOf[TextView]
@@ -80,7 +89,8 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		val id = "%04d".format(t.order) + t.code
 
 		val (text, backgroundColor) = t.status match {
-			case TSUnknown => (s"$id: Ckecking...", colorDefault)
+			// case TSUnknown => (s"$id: Ckecking...", colorDefault)
+			case TSUnknown => (s"$id: Ckecking...", if (position / 2 == 0) colorSuccess else colorWarning)
 			case TSValid => t.details.map(d => (s"${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
 				Log.w(TAG, "No ticket details found for CheckInSuccess.")
 				(s"$id: Error!", colorDefault)

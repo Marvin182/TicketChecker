@@ -19,11 +19,15 @@ package object common {
 		def e(msg: String) { Log.e(TAG, msg) }
 	}
 
-	def tryOrLog(f: => Unit) {
+	def tryOrLog(f: => Unit) = {
 		try {
 			f
+			true
 		} catch {
-			case e: Throwable => log.w(e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
+			case e: Throwable => {
+				log.w(e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
+				false
+			}
 		}
 	}
 

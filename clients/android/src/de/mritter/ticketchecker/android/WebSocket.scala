@@ -20,7 +20,7 @@ class WebSocket(uri: URI) extends WebSocketClient(uri, new Draft_17, new java.ut
 		try {
 			send(msg)
 		} catch {
-			case e: Throwable => log.e("WebSocket.send" + e.toString + "\n" + e.getStackTrace.take(4).mkString("\n"))
+			case e: Throwable => log.e("WebSocket.send" + e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
 		}
 	}
 

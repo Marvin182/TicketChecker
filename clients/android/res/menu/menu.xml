@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_connection"
+        android:icon="@drawable/device_access_flash_off"
+        android:orderInCategory="100"
+        android:showAsAction="always" />
+    <item
+        android:id="@+id/menu_torch"
+        android:icon="@drawable/device_access_brightness_low"
+        android:orderInCategory="200"
+        android:showAsAction="always" />
+
+</menu> 

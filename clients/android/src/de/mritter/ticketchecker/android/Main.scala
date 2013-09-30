@@ -5,8 +5,8 @@ import scala.collection.mutable.Subscriber
 
 import android.os.{Bundle, Handler}
 import android.widget._
-import android.view.{View, SurfaceView}
-import android.content.Context
+import android.view.{View, SurfaceView, WindowManager}
+import android.content.{Context, Intent, SharedPreferences}
 import android.graphics.PixelFormat
 
 import android.hardware.Camera
@@ -14,7 +14,7 @@ import android.hardware.Camera._
 
 import net.sourceforge.zbar._
 
-import com.actionbarsherlock.app.{SherlockActivity, ActionBar}
+import com.actionbarsherlock.app.{SherlockFragmentActivity, SherlockDialogFragment, ActionBar}
 import com.actionbarsherlock.view.{Menu, MenuItem, MenuInflater}
 
 import de.mritter.android.common._
@@ -25,7 +25,7 @@ object Main {
 	System.loadLibrary("iconv")
 }
 
-class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] with Camera.PreviewCallback {
+class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, TicketApi] with Camera.PreviewCallback {
 	Main  
   
 	val ticketApi = new TicketApi
@@ -38,12 +38,11 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 
 	// GUI elements
 	def find[T](id: Int) = findViewById(id).asInstanceOf[T]
-	lazy val hostAddress = find[EditText](R.id.host)
-	lazy val connectButton = find[Button](R.id.connect)
 	lazy val ticketList = find[ListView](R.id.ticket_list)
-	lazy val clearButton = find[Button](R.id.clear)
+	lazy val clearButton = find[ImageButton](R.id.clear)
 	lazy val checkinProgressBar = find[ProgressBar](R.id.checkin_progress)
-	var apiConnectedMenuItem: Option[MenuItem] = None
+	var menuConnectionItem: Option[MenuItem] = None
+	var menuTorchItem: MenuItem = null
 
 	lazy val actionBar = getSupportActionBar
 
@@ -53,24 +52,6 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 
 		actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM)
 
-		hostAddress.setText(preferences.getString("host", "192.168.42.1"))
-		// username.setText(preferences.getString("username", ""))
-		connectButton.setOnClickListener(new View.OnClickListener() {
-			def onClick(v: View) {
-				val editor = preferences.edit
-				editor.putString("host", hostAddress.getText.toString)
-				editor.commit
-				ticketApi.connect(hostAddress.getText.toString, "Einlass1")
-			}
-		})
-
-		// toggle torch listener
-		find[CheckBox](R.id.toggle_torch).setOnClickListener(new View.OnClickListener() {
-			def onClick(v: View) {
-				cameraPreview.setTorch(v.asInstanceOf[CheckBox].isChecked)
-			}	
-		})
-
 		tickets = new TicketListAdapter(this)
 		ticketList.setAdapter(tickets)
 		clearButton.setOnClickListener(new View.OnClickListener() {
@@ -79,38 +60,55 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 			}
 		})
 
-		getWindow.setFormat(PixelFormat.UNKNOWN)
+		cameraPreview.setTorch(preferences.getBoolean("torch", false))
 	}
 
 	override protected def onResume {
 		super.onResume
 		cameraPreview.resume
-		ticketApi.autoReconnect = true
-		ticketApi.connect(preferences.getString("host", "192.168.42.1"), "Einlass1")
+		connectApiFromPreferences
 	}
 
 	override protected def onPause {
 		super.onPause
 		cameraPreview.pause
-		ticketApi.autoReconnect = false
-		ticketApi.disconnect()
+		ticketApi.disconnect
 	}
 
 	override protected def onCreateOptionsMenu(menu: Menu) = {
-		getSupportMenuInflater.inflate(R.menu.main, menu)
-		apiConnectedMenuItem = Some(menu.findItem(R.id.menu_api_connection))
-		apiConnectedMenuItem.map(_.setIcon(if (ticketApi.connected) R.drawable.rating_good else R.drawable.rating_bad))
 		super.onCreateOptionsMenu(menu)
+
+		getSupportMenuInflater.inflate(R.menu.menu, menu)
+		menuConnectionItem = Some(menu.findItem(R.id.menu_connection))
+		menuConnectionItem.map(_.setIcon(if (ticketApi.connected) R.drawable.device_access_flash_on else R.drawable.device_access_flash_off))
+
+		menuTorchItem = menu.findItem(R.id.menu_torch)
+		menuTorchItem.setIcon(if (cameraPreview.torch) R.drawable.device_access_brightness_high else R.drawable.device_access_brightness_low)
+
+		true
 	}
 
 	override protected def onOptionsItemSelected(item: MenuItem) = item.getItemId match {
+		case R.id.menu_connection => {
+			cameraPreview.pause
+			new ConnectionSettings(preferences, {ok => if (ok) connectApiFromPreferences; cameraPreview.resume}).show(getSupportFragmentManager, "connection")
+			true
+		}
+		case R.id.menu_torch => {
+			cameraPreview.toggleTorch
+			menuTorchItem.setIcon(if (cameraPreview.torch) R.drawable.device_access_brightness_high else R.drawable.device_access_brightness_low)
+			val editor = preferences.edit
+			editor.putBoolean("torch", cameraPreview.torch)
+			editor.commit
+			true
+		}
 		case _ => super.onOptionsItemSelected(item)
 	}
 
 	def notify(api: TicketApi, event: TicketApiEvent) = runOnGUiThread {
 		event match {
-			case TicketApiConnected => apiConnectedMenuItem.map(_.setIcon(R.drawable.rating_good))
-			case TicketApiDisconnected => apiConnectedMenuItem.map(_.setIcon(R.drawable.rating_bad))
+			case TicketApiConnected => menuConnectionItem.map(_.setIcon(R.drawable.device_access_flash_on))
+			case TicketApiDisconnected => menuConnectionItem.map(_.setIcon(R.drawable.device_access_flash_off))
 			case TicketStatusChangeEvent(ticket, status, details) => tickets.update(ticket, status, details)
 			case EventStatsUpdateEvent(stats) => {
 				checkinProgressBar.setMax(stats.ticketsTotal)
@@ -135,9 +133,13 @@ class Main extends SherlockActivity with Subscriber[TicketApiEvent, TicketApi] w
 					}
 				}
 			} catch {
-				case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(4).mkString("\t\n"))
+				case e: Throwable => log.e(e.toString + "\n" + e.getStackTrace.take(5).mkString("\t\n"))
 			}
 		}
+	}
+
+	protected def connectApiFromPreferences {
+		ticketApi.connect(preferences.getString("host_address", ""), preferences.getString("username", ""), preferences.getString("password", ""))
 	}
 
 	protected def runOnGUiThread(f: => Unit) {

@@ -18,6 +18,7 @@ class CameraPreview(val surfaceView: SurfaceView, val previewCallback: Camera.Pr
 	protected var camera: Camera = null
 	protected var previewing = false
 	protected var surfaceCreated = false
+	protected var torchOn = false
 
 	def resume {
 		startPreview
@@ -27,9 +28,16 @@ class CameraPreview(val surfaceView: SurfaceView, val previewCallback: Camera.Pr
 		stopPreview
 	}
 
+	def toggleTorch {
+		setTorch(!torch)
+	}
+
+	def torch = torchOn
+
 	def setTorch(on: Boolean) {
+		torchOn = on
 		withCameraParameters{ p =>
-			p.setFlashMode(if (on) "torch" else "off")
+			p.setFlashMode(if (torchOn) "torch" else "off")
 		}
 	}
 
@@ -40,6 +48,8 @@ class CameraPreview(val surfaceView: SurfaceView, val previewCallback: Camera.Pr
 
 	override def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
 		stopPreview
+		
+		// change settings
 
 		startPreview
 	}
@@ -60,6 +70,7 @@ class CameraPreview(val surfaceView: SurfaceView, val previewCallback: Camera.Pr
 						} else {
 							p.setFocusMode("auto")
 						}
+						p.setFlashMode(if (torchOn) "torch" else "off")
 					}
 					camera.setDisplayOrientation(90)
 					camera.setPreviewDisplay(surfaceHolder)
@@ -110,7 +121,7 @@ class CameraPreview(val surfaceView: SurfaceView, val previewCallback: Camera.Pr
 
 	protected val autoFocusCallback = new AutoFocusCallback {
 		def onAutoFocus(success: Boolean, camera: Camera) {
-			scheduleTask(doContinuousAutoFocus, 250)
+			scheduleTask(doContinuousAutoFocus, 100)
 		}
 	}
 }

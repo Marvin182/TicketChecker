@@ -1,68 +1,50 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".Main2" >
-
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-        <EditText
-            android:id="@+id/host"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="@string/host_hint"
-            android:text="192.168.137.1" >
-        </EditText>
-
-        <Button
-            android:id="@+id/connect"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connect" />
-    </LinearLayout>
+    android:paddingBottom="5dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="5dp"
+    tools:context=".Main" >
 
     <ProgressBar
         android:id="@+id/checkin_progress"
-        android:layout_width="match_parent" 
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?android:attr/progressBarStyleHorizontal"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_margin="5dp"
+    />
+
+    <ImageButton
+        android:id="@+id/clear"
         android:layout_alignParentBottom="true"
-        android:layout_margin="5dp" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/content_discard"
+    />
 
     <ListView
         android:id="@+id/ticket_list"
+        android:layout_above="@id/clear"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
-
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-        <CheckBox android:id="@+id/toggle_torch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/torch" />
-
-        <Button
-            android:id="@+id/clear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/clear" />
-    </LinearLayout>
+        android:layout_height="132dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+    />
 
     <SurfaceView
-        android:id="@+id/surfaceview" 
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
+        android:id="@+id/surfaceview"
+        android:layout_below="@id/checkin_progress"
+        android:layout_above="@id/ticket_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+    />
 
-</LinearLayout>
+</RelativeLayout>
