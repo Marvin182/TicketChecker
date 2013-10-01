@@ -49,8 +49,10 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 
 	def add(t: Ticket): Boolean = if (contains(t)) false else {
 		log.v("TicketListAdapter.add() " + t)
-		tickets prepend bigTicket(t)
-		notifyDataSetChanged
+		tickets.synchronized {
+			tickets prepend bigTicket(t)
+			notifyDataSetChanged
+		}
 		true
 	}
 
@@ -63,7 +65,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 
 	def update(t: Ticket, status: TicketStatus, details: Option[TicketDetails]) {
 		if (contains(t)) {
-			log.v("TicketListAdapter.update() " + t)
+			log.v(s"TicketListAdapter.update($t)")
 			val ticket = bigTicket(t)
 			ticket.status = status
 			ticket.details = details
@@ -99,25 +101,27 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		val id = "%04d".format(t.order) + t.code
 
 		val (text, backgroundColor) = t.status match {
-			case TSUnknown => (s"$id: Ckecking...", colorDefault)
-			case TSValid => t.details.map(d => (s"${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
+			case TSUnknown => (s"$id: ${string(R.string.checking)}", colorDefault)
+			case TSValid => t.details.map(d => (s"${d.forename} ${d.surname} (${string(R.string.table)} ${d.table})", colorSuccess)).getOrElse{
 				Log.w(TAG, "No ticket details found for CheckInSuccess.")
 				(s"$id: Error!", colorDefault)
 			}
 			case TSUsed => t.details.map { d =>
-					val time = dateFormat.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
-					(s"${d.forename} ${d.surname} Checked already in at $time", colorWarning)
+					val m = string(R.string.checked_in_at) format dateFormat.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
+					(s"${d.forename} ${d.surname} $m", colorWarning)
 				} getOrElse {
 					Log.w(TAG, "No ticket details found for CheckInFailed.")
 					(s"$id: Error!", colorDefault)
 				}
-			case TSInvalid => (s"$id: Invalid!", colorDanger)
+			case TSInvalid => (s"$id: ${string(R.string.invalid)}", colorDanger)
 		}
 		textView.setText(text)
 		v.setBackgroundColor(backgroundColor)
 
 		v
 	}
+
+	protected def string(id: Int) = context.getString(id)
 
 	override def hasStableIds = true
 	override def isEmpty = tickets.isEmpty

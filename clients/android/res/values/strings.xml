@@ -10,4 +10,14 @@
     <string name="connect">Verbinden</string>
     <string name="cancel">Abbrechen</string>
 
+    <!-- Connection Toast -->
+    <string name="connected">Verbindung hergestellt</string>
+    <string name="disconnected">Keine Verbindung</string>
+
+    <!-- Ticket List -->
+    <string name="checking">Überprüfe...</string>
+    <string name="checked_in_at">hat bereits um %s eingecheckt.</string>
+    <string name="invalid">Ungültig!</string>
+    <string name="table">Tisch</string>
+
 </resources>

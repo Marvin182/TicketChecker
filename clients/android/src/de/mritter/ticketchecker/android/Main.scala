@@ -55,6 +55,15 @@ class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, Tick
 		ticketList.setAdapter(tickets)
 
 		cameraPreview.setTorch(preferences.getBoolean("torch", false))
+
+		/* For taking screenshots */
+		// tickets add QrTicket(4, "FDP")
+		// tickets add QrTicket(3, "CDU")
+		// tickets add QrTicket(2, "Grüne")
+		// tickets add QrTicket(1, "Linke")
+		// tickets.update(QrTicket(4, "FDP"), TSInvalid, None)
+		// tickets.update(QrTicket(3, "CDU"), TSUsed, Some(TicketDetails(1, 3, "CDU", "Angela", "Merkel", false, 1, true, None, Some(System.currentTimeMillis))))
+		// tickets.update(QrTicket(2, "Grüne"), TSValid, Some(TicketDetails(2, 2, "Grüne", "Claudia", "Rothe", false, 1, true, None, Some(System.currentTimeMillis))))
 	}
 
 	override protected def onResume {
@@ -101,8 +110,14 @@ class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, Tick
 
 	def notify(api: TicketApi, event: TicketApiEvent) = runOnGUiThread {
 		event match {
-			case TicketApiConnected => menuConnectionItem.map(_.setIcon(R.drawable.device_access_flash_on))
-			case TicketApiDisconnected => menuConnectionItem.map(_.setIcon(R.drawable.device_access_flash_off))
+			case TicketApiConnected => {
+				shortToast(getString(R.string.connected))
+				menuConnectionItem.map(_.setIcon(R.drawable.device_access_flash_on))
+			}
+			case TicketApiDisconnected => {
+				shortToast(getString(R.string.disconnected))
+				menuConnectionItem.map(_.setIcon(R.drawable.device_access_flash_off))
+			}
 			case TicketStatusChangeEvent(ticket, status, details) => tickets.update(ticket, status, details)
 			case EventStatsUpdateEvent(stats) => {
 				checkinProgressBar.setMax(stats.ticketsTotal)
@@ -134,6 +149,10 @@ class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, Tick
 
 	protected def connectApiFromPreferences {
 		ticketApi.connect(preferences.getString("host_address", ""), preferences.getString("username", ""), preferences.getString("password", ""))
+	}
+
+	protected def shortToast(message: String) {
+		Toast.makeText(this, message, Toast.LENGTH_SHORT).show
 	}
 
 	protected def runOnGUiThread(f: => Unit) {
