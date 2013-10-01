@@ -71,6 +71,15 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		}
 	}
 	
+	val removeTicketListener = new View.OnClickListener {
+		def onClick(v: View) {
+			val ticketItem = v.getParent.asInstanceOf[View]
+			val position = ticketItem.getParent.asInstanceOf[ViewGroup].indexOfChild(ticketItem)
+			tickets remove position
+			notifyDataSetChanged
+		}
+    }
+
 	// list adapter stuff
 	def getCount = tickets.length
 	def getItem(position: Int): Object = tickets(position)
@@ -81,6 +90,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		var v: View = convertView
 		if (v == null) { 
 			v = inflater.inflate(R.layout.ticket_list_item, parent, false)
+			v.findViewById(R.id.remove).setOnClickListener(removeTicketListener)
 		} 
 
 		val textView = v.findViewById(R.id.text).asInstanceOf[TextView]
@@ -89,8 +99,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 		val id = "%04d".format(t.order) + t.code
 
 		val (text, backgroundColor) = t.status match {
-			// case TSUnknown => (s"$id: Ckecking...", colorDefault)
-			case TSUnknown => (s"$id: Ckecking...", if (position / 2 == 0) colorSuccess else colorWarning)
+			case TSUnknown => (s"$id: Ckecking...", colorDefault)
 			case TSValid => t.details.map(d => (s"${d.forename} ${d.surname} (Tisch ${d.table})", colorSuccess)).getOrElse{
 				Log.w(TAG, "No ticket details found for CheckInSuccess.")
 				(s"$id: Error!", colorDefault)
@@ -105,7 +114,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 			case TSInvalid => (s"$id: Invalid!", colorDanger)
 		}
 		textView.setText(text)
-		textView.setBackgroundColor(backgroundColor)
+		v.setBackgroundColor(backgroundColor)
 
 		v
 	}

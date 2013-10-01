@@ -17,7 +17,7 @@ object Global extends GlobalSettings {
 	var testMode = false
 
 	override def onStart(app: App) {
-		testMode = app.configuration.getBoolean("testMode") getOrElse false
+		testMode = app.configuration.getString("mode").map(_ == "TEST") getOrElse false
 
 		val settingsDir = new File(settingsPath)
 		if (!settingsDir.exists) {

@@ -39,7 +39,6 @@ class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, Tick
 	// GUI elements
 	def find[T](id: Int) = findViewById(id).asInstanceOf[T]
 	lazy val ticketList = find[ListView](R.id.ticket_list)
-	lazy val clearButton = find[ImageButton](R.id.clear)
 	lazy val checkinProgressBar = find[ProgressBar](R.id.checkin_progress)
 	var menuConnectionItem: Option[MenuItem] = None
 	var menuTorchItem: MenuItem = null
@@ -54,11 +53,6 @@ class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, Tick
 
 		tickets = new TicketListAdapter(this)
 		ticketList.setAdapter(tickets)
-		clearButton.setOnClickListener(new View.OnClickListener() {
-			def onClick(v: View) {
-				tickets.clear
-			}
-		})
 
 		cameraPreview.setTorch(preferences.getBoolean("torch", false))
 	}
@@ -122,7 +116,7 @@ class Main extends SherlockFragmentActivity with Subscriber[TicketApiEvent, Tick
 		val barcode = new Image(size.width, size.height, "Y800")
 		barcode.setData(data)
 
-		if (scanner.scanImage(barcode) != 0 && ticketApi.connected) {				
+		if (scanner.scanImage(barcode) != 0) {				
 			val results = scanner.getResults.iterator.map(_.getData).toArray
 			log.v("scanned: " + results.mkString(" | "))
 			try {

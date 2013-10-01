@@ -20,23 +20,13 @@
         android:layout_margin="5dp"
     />
 
-    <ImageButton
-        android:id="@+id/clear"
-        android:layout_alignParentBottom="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/content_discard"
-    />
-
     <ListView
         android:id="@+id/ticket_list"
-        android:layout_above="@id/clear"
+        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="132dp"
+        android:layout_height="200sp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
     />
 
     <SurfaceView
