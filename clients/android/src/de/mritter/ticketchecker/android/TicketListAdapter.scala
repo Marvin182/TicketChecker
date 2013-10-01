@@ -108,7 +108,7 @@ class TicketListAdapter(val context: Context) extends BaseAdapter {
 			}
 			case TSUsed => t.details.map { d =>
 					val m = string(R.string.checked_in_at) format dateFormat.format(new Date(1000 * d.checkInTime.getOrElse(0L)))
-					(s"${d.forename} ${d.surname} $m", colorWarning)
+					(s"${d.forename} ${d.surname} $m (${string(R.string.table)} ${d.table})", colorWarning)
 				} getOrElse {
 					Log.w(TAG, "No ticket details found for CheckInFailed.")
 					(s"$id: Error!", colorDefault)
